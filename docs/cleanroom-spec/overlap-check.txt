@@ -1,4 +1,4 @@
-adopted files: 44; spec files: ['commend.md', 'profile-links.md']
+adopted files: 44; spec files: ['README.md', 'commend.md', 'profile-links.md']
 identical lines >40 chars: 0
 lines sharing a 41-char window with the adopted corpus: 8
   WIN ('commend.md', 28, '/post_game/citadel_db_page_post_game_new.')

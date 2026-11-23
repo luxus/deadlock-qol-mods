@@ -4,7 +4,8 @@ Dirty-Room-Ergebnis. Der Implementierer bekommt nur diesen Ordner, nicht den alt
 
 - `commend.md`: Commend, 29 Abnahme-Punkte, 7 offene Fragen
 - `profile-links.md`: Profile Links, 38 Abnahme-Punkte, 8 offene Fragen
-- `assets/`: Schemata, ADDONS-Referenzscreenshot, Site-Logos (siehe `assets/README.md`)
+- `assets/`: Schemata, ADDONS-Referenzscreenshot, Site-Logos (siehe `assets/README.md`).
+  Muss mit eingecheckt werden (im Repo nicht von `.gitignore` erfasst); PR #1 hatte sie nicht.
 - `overlap-check.txt`: Ergebnis des Zeilenvergleichs gegen die übernommenen Dateien
   (erneut ausführen: `python3 /workspace/cleanroom/tools/overlap_check.py`)
 
