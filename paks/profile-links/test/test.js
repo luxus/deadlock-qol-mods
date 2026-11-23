@@ -100,6 +100,14 @@ H.ctx.FindChildTraverse('UserName')._text = 'Bea';
 advance(1.2);
 assert(!pending(H.ctx.FindChildTraverse('PlStatlocker')), 'a later player on the same card still gets a fresh wait');
 
+bootCard(true, true);
+const userPanel = H.ctx.FindChildTraverse('UserName');
+userPanel._text = '';
+mk('Label', userPanel, 'InnerName', '', 'Ada');
+load(PAGE);
+advance(1.2);
+assert(!pending(H.ctx.FindChildTraverse('PlStatlocker')), 'the card name is the child text of UserName');
+
 bootCard(true, false, '');
 load(PAGE);
 advance(0.9);

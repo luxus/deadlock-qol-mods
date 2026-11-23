@@ -10,6 +10,20 @@ const WATCH_MS = 8000;
 const ok = p => !!(p && p.IsValid && p.IsValid());
 const has = (p, c) => { try { return ok(p) && p.BHasClass && p.BHasClass(c); } catch (e) { return false; } };
 const textOf = p => { if (!ok(p)) return ''; try { return String(p.text || ''); } catch (e) { return ''; } };
+// SG-P1: CitadelUserName has no text of its own. Join the subtree, parent before children, 8 levels.
+const treeText = root => {
+	const parts = [];
+	const go = (p, depth) => {
+		if (!ok(p) || depth > 8) return;
+		const bit = textOf(p).replace(/<[^>]*>/g, ' ').replace(/\s+/g, ' ').replace(/^\s+|\s+$/g, '');
+		if (bit) parts.push(bit);
+		if (depth === 8) return;
+		const n = p.GetChildCount ? p.GetChildCount() : 0;
+		for (let i = 0; i < n; i++) go(p.GetChild(i), depth + 1);
+	};
+	go(root, 0);
+	return parts.join(' ').replace(/\s+/g, ' ').replace(/^\s+|\s+$/g, '');
+};
 const nowMs = () => { try { if (typeof $.PlClock === 'function') return $.PlClock(); } catch (e) { /* tests */ } return Date.now(); };
 const cancel = h => { if (h) { try { $.CancelScheduled(h); } catch (e) { /* ran */ } } return null; };
 const ctx = $.GetContextPanel();
@@ -122,8 +136,8 @@ const pageMain = () => {
 		if (ok(friend)) sources.push(textOf(friend));
 		if (ok(self)) textsUnder(self).forEach(t => sources.push(t));
 		const id = agreeIds(sources);
-		const name = textOf(self);
-		const fp = id + '|' + textOf(user) + '|' + textOf(nick) + '|' + (localPlayer() ? '1' : '0');
+		const name = treeText(self);
+		const fp = id + '|' + treeText(user) + '|' + treeText(nick) + '|' + (localPlayer() ? '1' : '0');
 		return { id: id, name: name, fp: fp };
 	};
 	const links = on => { showLink(stat, on); showLink(chaps, on); };
@@ -204,11 +218,11 @@ const cardMain = () => {
 
 	const read = () => {
 		const id = agreeIds([textOf(probe), textOf(account)]);
-		const name = textOf(user);
-		const status = textOf(rich);
+		const name = treeText(user);
+		const status = treeText(rich);
 		const local = localPlayer();
 		const loading = has(ctx, 'Loading');
-		const fp = id + '|' + name + '|' + textOf(nick) + '|' + (local ? '1' : '0');
+		const fp = id + '|' + name + '|' + treeText(nick) + '|' + (local ? '1' : '0');
 		return { id: id, name: name, status: status, local: local, loading: loading, fp: fp };
 	};
 	const links = on => {
