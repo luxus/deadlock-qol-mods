@@ -121,7 +121,7 @@ const matchText = () => {
 		state.matchLabel = label;
 	}
 	if (!ok(state.matchLabel)) return '';
-	try { return tidy(state.matchLabel.text); } catch (e) { return ''; }
+	try { return plain(state.matchLabel.text); } catch (e) { return ''; }
 };
 const paint = (p, on) => {
 	if (!ok(p)) return;

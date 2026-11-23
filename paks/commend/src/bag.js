@@ -7,6 +7,7 @@ const dcBag = () => {
 		if (!$.DcStore) $.DcStore = {};
 		root = $.DcStore;
 	}
-	if (!root.DcCommend || root.DcCommend.v !== '2.0.0' || 'match' in root.DcCommend || 'all' in root.DcCommend) root.DcCommend = { v: '2.0.0', on: root.DcCommend && root.DcCommend.on !== false };
+	const prev = root.DcCommend;
+	if (!prev || prev.v !== '2.0.0' || 'match' in prev || 'all' in prev) root.DcCommend = { v: '2.0.0', on: !prev || prev.on !== false };
 	return root.DcCommend;
 };
