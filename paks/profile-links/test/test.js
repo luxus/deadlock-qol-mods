@@ -50,17 +50,23 @@ assert(C.created === 0, 'no rank image before the id settles');
 advance(2.2);
 assert(!pending(stat) && !pending(H.ctx.FindChildTraverse('PlDeadchaps')), 'both logos show together after 2 s');
 assert(C.created === 1 && C.images === 1, 'one rank image request: ' + C.created + '/' + C.images);
+bootPage();
+H.ctx.FindChildTraverse('FriendID')._text = '9999999';
+load(PAGE);
+advance(2.4);
+assert(!pending(H.ctx.FindChildTraverse('PlStatlocker')), 'the visible FriendID label is not an id source');
 resetCounts();
 advance(1);
 assert(C.created === 0 && C.images === 0, 'a settled page does not request the image again');
+const pageStat = () => H.ctx.FindChildTraverse('PlStatlocker');
 H.ctx.events.onmouseover();
 advance(1.5);
 H.ctx.events.onmouseover();
 advance(1.5);
-assert(pending(stat), 'a second mouseover restarts the two second wait');
+assert(pending(pageStat()), 'a second mouseover restarts the two second wait');
 advance(0.8);
-assert(!pending(stat), 'logos return about two seconds after the last mouseover');
-stat.events.onactivate();
+assert(!pending(pageStat()), 'logos return about two seconds after the last mouseover');
+pageStat().events.onactivate();
 assert(H.clicks.some(c => c.ev === 'ExternalBrowserGoToURL' && c.id === 'https://statlocker.gg/profile/1234567'), 'statlocker click: ' + JSON.stringify(H.clicks));
 
 const bootCard = (menu, local, status) => {
