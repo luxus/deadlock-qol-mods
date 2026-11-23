@@ -40,15 +40,20 @@ const flagged = (p, classes, ids, depth) => {
 	return false;
 };
 const ours = p => has(p, 'DcBtn') || has(p, 'DcRow') || pid(p).indexOf('Dc') === 0;
-const tidy = value => String(value == null ? '' : value).replace(/<[^>]*>/g, ' ').replace(/\s+/g, ' ').replace(/^\s+|\s+$/g, '').toLowerCase();
+const plain = value => String(value == null ? '' : value).replace(/<[^>]*>/g, ' ').replace(/^\s+|\s+$/g, '').toLowerCase();
 const firstText = p => {
 	let hit = '';
 	walk(p, node => {
 		if (hit) return;
 		let t = '';
-		try { t = tidy(node.text); } catch (e) { t = ''; }
+		try { t = plain(node.text); } catch (e) { t = ''; }
 		if (t) hit = t;
 	});
+	return hit;
+};
+const findDesc = (root, pred) => {
+	let hit = null;
+	walk(root, p => { if (!hit && pred(p)) hit = p; });
 	return hit;
 };
 // The mask is only the fallback. An owner class further up, such as .MVPDetails, wins.
@@ -60,17 +65,13 @@ const ownerOf = target => {
 	}
 	return mask || target;
 };
+// SG-C1: the name panel can sit any number of levels down, and its text can sit in a child label.
 const ownerName = owner => {
 	if (!ok(owner)) return '';
-	const byId = id => ok(owner.FindChild) ? owner.FindChild(id) : null;
-	const named = byId('PlayerName') || byId('MVPPlayerName');
-	if (ok(named)) {
-		const t = firstText(named);
-		if (t) return t;
-	}
-	let hit = '';
-	walk(owner, node => { if (!hit && has(node, 'PlayerName')) hit = firstText(node); });
-	return hit;
+	const named = findDesc(owner, p => pid(p) === 'PlayerName')
+		|| findDesc(owner, p => pid(p) === 'MVPPlayerName')
+		|| findDesc(owner, p => has(p, 'PlayerName'));
+	return ok(named) ? firstText(named) : '';
 };
 const teamOf = p => {
 	for (let n = 0, a = p; ok(a) && n < 64; a = a.GetParent(), n++) {
@@ -268,4 +269,4 @@ if (ok(ctx)) {
 	try { apply(true); } catch (e) { say('load ' + (e && e.message ? e.message : e)); }
 	arm();
 }
-$.DcTest = { VERSION: VERSION, TICK_S: TICK_S, act: act, apply: apply, kindOf: kindOf, teamOf: teamOf, ownerOf: ownerOf };
+$.DcTest = { VERSION: VERSION, TICK_S: TICK_S, act: act, apply: apply, kindOf: kindOf, teamOf: teamOf, ownerOf: ownerOf, ownerName: ownerName };

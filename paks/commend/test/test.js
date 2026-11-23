@@ -68,6 +68,11 @@ const details = mk('Panel', H.ctx.FindChildTraverse('Team2Screen'), 'Det', 'MVPD
 mk('Label', details, 'MVPPlayerName', '', 'Foe');
 const mvpMask = mk('Panel', details, 'MVPHeroScenePanelMask');
 assert($.DcTest.ownerOf(mvpMask).id === 'Det', 'MVP mask owner is .MVPDetails, not the mask');
+const owner = mk('Panel', H.root, 'Owner', 'Player');
+const mid = mk('Panel', owner, 'Mid');
+const named = mk('Panel', mid, 'PlayerName');
+mk('Label', named, 'Leaf', '', '  Nested  Name  ');
+assert($.DcTest.ownerName(owner) === 'nested  name', 'name is the nested label, inner spaces kept: ' + $.DcTest.ownerName(owner));
 
 world('Team1');
 load(SRC);
