@@ -3,4 +3,4 @@ tools/modlock
 upstream/
 dist/
 tree.json
-assets/
+/assets/
