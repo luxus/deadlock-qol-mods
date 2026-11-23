@@ -1,0 +1,56 @@
+/* Scoreboard link slot. The slot is the last child of .Player, after Copy Build. */
+
+.PlProbe {
+	visibility: collapse;
+	width: 0px;
+	height: 0px;
+	margin: 0px;
+	padding: 0px;
+}
+
+.PlSlot {
+	height: 48px;
+	vertical-align: center;
+	margin-left: 8px;
+	flow-children: right;
+}
+
+.Player.TotalsRow .PlSlot {
+	visibility: collapse;
+}
+
+.PlSlot .PlLink {
+	width: 34px;
+	height: 34px;
+	border-radius: 50%;
+	background-color: #07130fdd;
+	margin-right: 4px;
+	vertical-align: center;
+	brightness: 1.0;
+	pre-transform-scale2d: 1.0;
+	transition-property: pre-transform-scale2d, brightness;
+	transition-duration: 0.08s;
+	transition-timing-function: ease-in-out;
+}
+
+.PlSlot .PlLink:hover {
+	brightness: 1.5;
+	pre-transform-scale2d: 1.12;
+}
+
+.PlSlot .PlLogo {
+	width: 30px;
+	height: 30px;
+	horizontal-align: center;
+	vertical-align: center;
+	background-size: contain;
+	background-repeat: no-repeat;
+	background-position: center;
+	hittest: false;
+}
+
+.PlOff .PlSlot,
+.PlNoStatlocker .PlStatlocker,
+.PlNoDeadchaps .PlDeadchaps {
+	visibility: collapse;
+}

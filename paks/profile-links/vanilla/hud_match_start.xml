@@ -1,0 +1,20 @@
+<!-- Valve layout, ClientVersion 6864 (18 Nov 2026), from SteamTracking/GameTracking-Deadlock. Unmodified input for tools/layout.py. -->
+<!-- xml reconstructed by Source 2 Viewer - https://valveresourceformat.github.io -->
+<root>
+	<styles>
+		<include src="s2r://panorama/styles/citadel_base_styles.vcss" />
+		<include src="s2r://panorama/styles/hud_match_start.vcss" />
+	</styles>
+	<CitadelHudMatchStart hittest="false">
+		<Panel class="MatchStartDetails">
+			<Panel id="TextureLayer">
+				<Panel id="Texture1" />
+				<Panel id="Texture2" />
+			</Panel>
+			<Panel id="TeamNameContainer">
+				<Panel id="TeamName" />
+				<Panel id="TeamNameWobble" />
+			</Panel>
+		</Panel>
+	</CitadelHudMatchStart>
+</root>
