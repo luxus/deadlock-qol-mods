@@ -295,7 +295,13 @@ const cardMain = () => {
 		seek();
 	});
 	hide();
-	arm(0.01);
+	st.started = 0;
+	st.timer = $.Schedule(0.01, () => {
+		if (!ok(ctx)) return;
+		st.started = nowMs();
+		st.seenLoad = has(ctx, 'Loading');
+		arm(0.1);
+	});
 };
 
 let type = '';
