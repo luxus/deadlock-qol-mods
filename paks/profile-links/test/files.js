@@ -40,6 +40,7 @@ const score = read('panorama/layout/post_game/citadel_db_post_game_scoreboard_ne
 assert(!score.includes('CommendContainer'), 'commend wrapper is unpacked');
 assert(score.includes('id="commendIcon"') && score.includes('id="CommendPlayerButton"') && score.includes('id="LocalPlayerIdentifier"'), 'commend children stay, with an empty icon');
 assert(score.indexOf('CopyBuildButton') < score.indexOf('class="PlSlot"'), 'link slot follows copy build');
+assert(score.slice(score.indexOf('CopyBuildButton'), score.indexOf('class="PlSlot"')).includes('</Panel>'), 'link slot is after .PlayerRow, not inside it');
 assert(score.includes('class="PlScoreboard"'), 'scoreboard root is marked');
 assert(score.includes('id="SoulsValue"') && score.includes('id="ItemsContainer"'), 'stat columns stay');
 
