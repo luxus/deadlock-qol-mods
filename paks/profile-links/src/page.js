@@ -214,7 +214,7 @@ const cardMain = () => {
 	const user = ctx.FindChildTraverse('UserName');
 	const nick = ctx.FindChildTraverse('UserNickname');
 	const rich = ctx.FindChildTraverse('UserRichPresence');
-	const st = { phase: 'seek', prev: null, since: 0, started: nowMs(), watchAt: 0, seenLoad: false, confirmed: '', id: '', timer: null, gen: 0, seeking: true, failed: false };
+	const st = { phase: 'seek', prev: null, since: 0, started: nowMs(), watchAt: 0, seenLoad: has(ctx, 'Loading'), confirmed: '', id: '', timer: null, gen: 0, seeking: true, failed: false };
 
 	const read = () => {
 		const id = agreeIds([textOf(probe), textOf(account)]);
@@ -238,6 +238,7 @@ const cardMain = () => {
 		st.prev = null;
 		st.since = 0;
 		st.started = nowMs();
+		st.seenLoad = has(ctx, 'Loading');
 		st.gen++;
 		hide();
 		arm(0.1);

@@ -100,6 +100,15 @@ H.ctx.FindChildTraverse('UserName')._text = 'Bea';
 advance(1.2);
 assert(!pending(H.ctx.FindChildTraverse('PlStatlocker')), 'a later player on the same card still gets a fresh wait');
 
+bootCard(true, false, '');
+load(PAGE);
+advance(2);
+H.ctx.AddClass('Loading');
+advance(0.2);
+H.ctx.RemoveClass('Loading');
+advance(1.8);
+assert(!pending(H.ctx.FindChildTraverse('PlStatlocker')), 'a load that is already on at the start of a run still counts as fresh');
+
 bootCard(true, true);
 const userPanel = H.ctx.FindChildTraverse('UserName');
 userPanel._text = '';
