@@ -73,7 +73,7 @@ def rank_block(kind):
 
 def logo_button(site, tip, extra):
 	return (
-		'<Button id="Pl%s" class="PlLink Pl%s %s PlPending" onmouseover="UIShowTextTooltip( %s )" onmouseout="UIHideTextTooltip()">'
+		'<Button id="Pl%s" class="PlLink Pl%s %s PlPending" onmouseover="UIShowTextTooltip( &apos;%s&apos; )" onmouseout="UIHideTextTooltip()">'
 		% (site, site, extra, tip)
 		+ LOGO % site.lower()
 		+ '</Button>'
@@ -157,9 +157,9 @@ def patch_board(src):
 	)
 	slot = (
 		'\t\t\t\t<Panel class="PlSlot">'
-		'<Button id="PlStatlocker" class="PlLink PlStatlocker" onmouseover="UIShowTextTooltip( View Statlocker Profile )" onmouseout="UIHideTextTooltip()">'
+		'<Button id="PlStatlocker" class="PlLink PlStatlocker" onmouseover="UIShowTextTooltip( &apos;View Statlocker Profile&apos; )" onmouseout="UIHideTextTooltip()">'
 		+ (LOGO % 'statlocker') + '</Button>'
-		'<Button id="PlDeadchaps" class="PlLink PlDeadchaps" onmouseover="UIShowTextTooltip( View DeadChaps Profile )" onmouseout="UIHideTextTooltip()">'
+		'<Button id="PlDeadchaps" class="PlLink PlDeadchaps" onmouseover="UIShowTextTooltip( &apos;View DeadChaps Profile&apos; )" onmouseout="UIHideTextTooltip()">'
 		+ (LOGO % 'deadchaps') + '</Button>'
 		'</Panel>\n'
 	)
