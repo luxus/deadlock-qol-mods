@@ -27,10 +27,11 @@ const top = () => {
 // SG-C3: depth-first, the panel before its children, children in layout order, no visit cap.
 const walk = (root, fn) => {
 	const go = p => {
-		if (!ok(p)) return;
-		fn(p);
+		if (!ok(p)) return false;
+		if (fn(p) === false) return true;
 		const c = p.GetChildCount ? p.GetChildCount() : 0;
-		for (let i = 0; i < c; i++) go(p.GetChild(i));
+		for (let i = 0; i < c; i++) if (go(p.GetChild(i))) return true;
+		return false;
 	};
 	go(root);
 };
@@ -46,16 +47,15 @@ const plain = value => String(value == null ? '' : value).replace(/<[^>]*>/g, ' 
 const firstText = p => {
 	let hit = '';
 	walk(p, node => {
-		if (hit) return;
 		let t = '';
 		try { t = plain(node.text); } catch (e) { t = ''; }
-		if (t) hit = t;
+		if (t) { hit = t; return false; }
 	});
 	return hit;
 };
 const findDesc = (root, pred) => {
 	let hit = null;
-	walk(root, p => { if (!hit && pred(p)) hit = p; });
+	walk(root, p => { if (pred(p)) { hit = p; return false; } });
 	return hit;
 };
 // The mask is only the fallback. An owner class further up, such as .MVPDetails, wins.
@@ -110,14 +110,14 @@ const canNow = () => {
 		try { if (a.BAscendantHasClass && a.BAscendantHasClass('CanCommendPlayers')) { state.canPanel = a; return true; } } catch (e) { /* no method */ }
 	}
 	let found = null;
-	walk(ctx, p => { if (!found && has(p, 'CanCommendPlayers')) found = p; });
+	walk(ctx, p => { if (has(p, 'CanCommendPlayers')) { found = p; return false; } });
 	state.canPanel = found;
 	return !!found;
 };
 const matchText = () => {
 	if (!ok(state.matchLabel)) {
 		let label = null;
-		walk(top(), p => { if (!label && pid(p) === 'MatchID') label = p; });
+		walk(top(), p => { if (pid(p) === 'MatchID') { label = p; return false; } });
 		state.matchLabel = label;
 	}
 	if (!ok(state.matchLabel)) return '';
@@ -157,13 +157,11 @@ const bind = () => {
 const ownTeam = root => {
 	let team = '';
 	walk(root, p => {
-		if (team) return;
-		if (has(p, 'PlayerActionContainer') && isLocal(p)) team = teamOf(p);
+		if (has(p, 'PlayerActionContainer') && isLocal(p)) { team = teamOf(p); if (team) return false; }
 	});
 	if (team) return team;
 	walk(root, p => {
-		if (team) return;
-		if (has(p, 'LocalPlayer') || has(p, 'Local') || has(p, 'IsLocalPlayer') || has(p, 'local_player')) team = teamOf(p);
+		if (has(p, 'LocalPlayer') || has(p, 'Local') || has(p, 'IsLocalPlayer') || has(p, 'local_player')) { team = teamOf(p); if (team) return false; }
 	});
 	return team;
 };
@@ -195,14 +193,14 @@ const act = kind => {
 	const targets = [];
 	walk(root, p => {
 		const k = kindOf(p);
-		if (k) targets.push({ p: p, i: targets.length });
+		if (k) targets.push({ p: p, k: k, i: targets.length });
 	});
-	targets.sort((a, b) => order[kindOf(a.p)] - order[kindOf(b.p)] || a.i - b.i);
+	targets.sort((a, b) => order[a.k] - order[b.k] || a.i - b.i);
 	const seen = {};
 	let hits = 0;
 	for (let i = 0; i < targets.length; i++) {
 		const target = targets[i].p;
-		const k = kindOf(target);
+		const k = targets[i].k;
 		// SG-C2: only Return is limited to return-kind targets. Team, Enemy and All take every kind.
 		if (kind === 'return' && k !== 'return') continue;
 		const owner = ownerOf(target);
@@ -249,7 +247,7 @@ const apply = force => {
 	for (let i = 0; i < state.rows.length; i++) {
 		const row = state.rows[i];
 		const show = can && !all && screen === row.screen;
-		paint(row.panel, show);
+		paint(row.panel, show && on);
 		for (let k = 0; k < KINDS.length; k++) paint(row.buttons[KINDS[k]], show && on);
 	}
 };

@@ -2,7 +2,6 @@
 // ADDONS block exists in the main menu. No commend targets here.
 const publish = v => {
 	dcBag().on = !!(v && v.on);
-	try { if (typeof $.DcApply === 'function') $.DcApply(); } catch (e) { /* no post-game */ }
 };
 try {
 	AddonSettings.register(COMMEND_SCHEMA({ on: true }), publish);

@@ -133,7 +133,7 @@ start({ store: { on: false }, wait: 0.2 });
 assert(H.entries.every(r => !badge(r) || !shown(badge(r))), 'stored off: no badges');
 
 assert((SRC.match(/AddonSettings\.pulse\(\);/g) || []).length >= 2, 'both tick paths pulse');
-assert(/const BUILD = 9;/.test(SRC), 'vendored lib');
+assert(/const BUILD = 11;/.test(SRC), 'vendored lib');
 assert(!/hud_escape_menu/.test(fs.readFileSync(__dirname + '/../src/main.js', 'utf8')) && !fs.existsSync(__dirname + '/../build/pak/panorama/layout/hud_escape_menu.xml'), 'never touches hud_escape_menu');
 
 // ---- crash regression (lea console 22.11. 09:40:10: FATAL "Unable to find child 'TeamControls'
@@ -158,6 +158,11 @@ assert(!/hud_escape_menu/.test(fs.readFileSync(__dirname + '/../src/main.js', 'u
 	assert(!native(H.list), 'full flow: no Lr panel under #Teams, .Team, #TeamEntries or the list');
 	const bridge = byId('LrPartyBridge');
 	assert(bridge && bridge.parent && bridge.parent.type === 'CitadelHudEscapeMenu', 'party bridge lives on the Esc menu root, not in the players list');
+	// toggling duo off and on again reuses the cached party groups without another bridge request
+	click('AddonSettingsButton'); advance(0.2);
+	click('LrRow_duo'); advance(0.2);
+	click('LrRow_duo'); advance(2);
+	assert(H.partyUrls.length === 1, 'duo toggle reuses cached party groups: ' + H.partyUrls.length);
 }
 {
 	start({ escClosed: true, entries: [{ name: 'Kai', hook: false, card: '4000001' }] });
@@ -168,6 +173,22 @@ assert(!/hud_escape_menu/.test(fs.readFileSync(__dirname + '/../src/main.js', 'u
 	start({ hideout: true, entries: [{ name: 'Kai', hook: false, card: '4000001' }] });
 	advance(6);
 	assert(!H.clicks.some(c => c.ev === 'Activated' && c.id === 'MainContents'), 'Hideout: no row is activated (same as the reference)');
+}
+// stopping while a probe is in flight cancels probe and dismiss timers
+{
+	start({ wait: 0.02, entries: [{ name: 'Slow', hook: false, card: '4000009', cardDelay: 0.3 }] });
+	click('AddonSettingsButton'); advance(0.02);
+	click('LrMaster');
+	H.clicks = [];
+	advance(2);
+	assert(!H.clicks.some(c => c.ev === 'DismissAllContextMenus'), 'stop cancels in-flight probe and does not dismiss menus later');
+}
+// row hero changing while a probe is waiting discards the stale card id
+{
+	start({ wait: 0.02, entries: [{ name: 'Swap', hero: 'Haze', card: '5000001', cardDelay: 0.25 }] });
+	H.entries[0].FindChildTraverse('LrRowHero')._text = 'Abrams';
+	advance(0.4);
+	assert(S.info.some(m => /card=stale via=hero changed/.test(m)), 'async hero change discards stale probe result');
 }
 
 console.log(passes + ' passed, ' + fails + ' failed');

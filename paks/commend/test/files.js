@@ -17,8 +17,8 @@ assert(!js.includes('ClientUI_FireOutput'), 'no mute-list poll');
 
 const settings = read('panorama/scripts/deadlock_commend_settings.js');
 assert(settings.includes("id: 'deadlock_commend'"), 'addon id deadlock_commend');
-assert(settings.includes('Deadlock Commend: 2.0.0 loaded'), 'loaded log line');
-assert(settings.includes('const BUILD = 9;'), 'addon settings 1.2.3 build 9');
+assert(settings.includes("const VERSION = '2.0.0';") && settings.includes("'Deadlock Commend: ' + VERSION + ' loaded"), 'loaded log line');
+assert(settings.includes('const BUILD = 11;'), 'addon settings 1.2.5 build 11');
 const reg = read('panorama/scripts/deadlock_commend_register.js');
 assert(reg.includes('DC-diag register hud'), 'hud registrar log');
 
@@ -37,6 +37,7 @@ assert(mvp.includes('id="HonorableMentions"') && mvp.indexOf('id="HonorableMenti
 
 const hud = read('panorama/layout/hud_join_team.xml');
 assert(hud.includes('deadlock_commend_register.vjs_c') && !hud.includes('deadlock_commend.vjs_c'), 'hud layout loads only the registrar');
+assert(!hud.includes('deadlock_commend.vcss'), 'hud layout does not load post-game commend CSS');
 assert(hud.includes('id="TextureLayer"') || hud.includes('JoinTeamButton'), 'hud keeps Valve buttons');
 
 const css = read('panorama/styles/post_game/deadlock_commend.css');

@@ -7,7 +7,7 @@ const publish = v => {
 };
 try {
 	AddonSettings.register(COMMEND_SCHEMA({ on: true }), publish);
-	$.Msg('Deadlock Commend: 2.0.0 loaded (' + AddonSettings.language() + ')');
+	$.Msg('Deadlock Commend: ' + VERSION + ' loaded (' + AddonSettings.language() + ')');
 } catch (e) {
 	try { $.Msg('Deadlock Commend: settings ' + e); } catch (e2) { /* no console */ }
 }

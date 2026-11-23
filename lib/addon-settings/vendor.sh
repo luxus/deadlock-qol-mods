@@ -6,13 +6,12 @@ ver=${2:-}
 libdir="$root/$ver"
 lib="$libdir/addon_settings.js"
 if [ "$cmd" != print ] && [ "$cmd" != pak ]; then
-	echo "Use: sh lib/addon-settings/vendor.sh print 1.2.3" >&2
-	echo "or:  sh lib/addon-settings/vendor.sh print 1.2.4" >&2
-	echo "or:  sh lib/addon-settings/vendor.sh pak 1.2.3 <pak-dir>" >&2
+	echo "Use: sh lib/addon-settings/vendor.sh print 1.2.5" >&2
+	echo "or:  sh lib/addon-settings/vendor.sh pak 1.2.5 <pak-dir>" >&2
 	exit 1
 fi
 if [ ! -f "$lib" ]; then
-	echo "No library at lib/addon-settings/$ver/addon_settings.js. Use 1.2.3 or 1.2.4." >&2
+	echo "No library at lib/addon-settings/$ver/addon_settings.js. Use 1.2.5." >&2
 	exit 1
 fi
 build=$(sed -n 's/^const BUILD = \([0-9][0-9]*\);.*/\1/p' "$lib")

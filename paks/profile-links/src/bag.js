@@ -7,6 +7,6 @@ const plBag = () => {
 		if (!$.PlStore) $.PlStore = {};
 		root = $.PlStore;
 	}
-	if (!root.PlLinks || root.PlLinks.v !== '2.0.0') root.PlLinks = { v: '2.0.0', images: {}, fails: {} };
+	if (!root.PlLinks || root.PlLinks.v !== VERSION) root.PlLinks = { v: VERSION, images: {}, fails: {} };
 	return root.PlLinks;
 };

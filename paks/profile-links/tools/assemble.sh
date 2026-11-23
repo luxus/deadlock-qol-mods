@@ -8,41 +8,46 @@ mkdir -p \
 	build/pak/panorama/styles \
 	build/pak/panorama/layout/post_game \
 	build/pak/panorama/images/profile_links
+VER=$(sed -n "s/^const VERSION = '\\([^']*\\)';/\\1/p" src/page.js | head -n 1)
 bundle() {
 	out=$1
-	shift
+	inject_ver=$2
+	shift 2
 	{
-		echo '// Deadlock Profile Links 2.0.0 - built from src/ by tools/build.sh. Written from scratch.'
+		echo "// Deadlock Profile Links $VER - built from src/ by tools/build.sh. Written from scratch."
 		echo '(() => {'
 		echo "'use strict';"
+		if [ "$inject_ver" = 1 ]; then echo "const VERSION = '$VER';"; fi
 		cat "$@"
 		echo '})();'
 	} > "$out"
 	node --check "$out"
 }
-bundle build/pak/panorama/scripts/profile_links.js src/id.js src/bag.js src/page.js
-bundle build/pak/panorama/scripts/profile_links_scoreboard.js src/id.js src/board.js
+bundle build/pak/panorama/scripts/profile_links.js 0 ../../lib/steam-id.js src/id.js src/common.js src/bag.js src/page.js
+bundle build/pak/panorama/scripts/profile_links_scoreboard.js 1 ../../lib/steam-id.js src/id.js src/common.js src/board.js
 {
-	echo '// Deadlock Profile Links 2.0.0 - built from src/ by tools/build.sh. Written from scratch.'
+	echo "// Deadlock Profile Links $VER - built from src/ by tools/build.sh. Written from scratch."
 	echo '(() => {'
 	echo "'use strict';"
-	sh ../../lib/addon-settings/vendor.sh print 1.2.3
+	echo "const VERSION = '$VER';"
+	sh ../../lib/addon-settings/vendor.sh print 1.2.5
 	cat src/strings.js src/schema.js src/apply.js src/settings.js
 	echo '})();'
 } > build/pak/panorama/scripts/profile_links_settings.js
 node --check build/pak/panorama/scripts/profile_links_settings.js
 {
-	echo '// Deadlock Profile Links 2.0.0 - built from src/ by tools/build.sh. Written from scratch.'
+	echo "// Deadlock Profile Links $VER - built from src/ by tools/build.sh. Written from scratch."
 	echo '(() => {'
 	echo "'use strict';"
-	sh ../../lib/addon-settings/vendor.sh print 1.2.3
+	echo "const VERSION = '$VER';"
+	sh ../../lib/addon-settings/vendor.sh print 1.2.5
 	cat src/strings.js src/schema.js src/register.js
 	echo '})();'
 } > build/pak/panorama/scripts/profile_links_register.js
 node --check build/pak/panorama/scripts/profile_links_register.js
 cp src/profile_links.css build/pak/panorama/styles/profile_links.css
 cp src/scoreboard.css build/pak/panorama/styles/profile_links_scoreboard.css
-node tools/loc.js src/strings.js STRINGS build/pak deadlock_profile_links >/dev/null
+node ../../tools/loc.js src/strings.js STRINGS build/pak deadlock_profile_links >/dev/null
 python3 tools/layout.py page vanilla/citadel_db_page_profile.xml \
 	build/pak/panorama/layout/citadel_db_page_profile.xml
 python3 tools/layout.py card vanilla/profile_card.xml \

@@ -1,20 +1,9 @@
-const VERSION = '2.0.0';
 const TRIES = 9;
 const GAP_S = 0.15;
-const ok = p => !!(p && p.IsValid && p.IsValid());
-const has = (p, c) => { try { return ok(p) && p.BHasClass && p.BHasClass(c); } catch (e) { return false; } };
-const textOf = p => { if (!ok(p)) return ''; try { return String(p.text || ''); } catch (e) { return ''; } };
 const attr = (p, key) => { if (!ok(p) || !p.GetAttributeString) return ''; try { return p.GetAttributeString(key, ''); } catch (e) { return ''; } };
 const prop = (p, key) => { if (!ok(p)) return ''; try { const v = p[key]; return v == null ? '' : String(v); } catch (e) { return ''; } };
 const labelText = p => { const t = textOf(p); return t || attr(p, 'text'); };
 const ctx = $.GetContextPanel();
-const openUrl = url => {
-	// SPEC-OPEN O-P7: try the Panorama browser event, then the Steam overlay.
-	try { $.DispatchEvent('ExternalBrowserGoToURL', url); return; } catch (e) { /* overlay next */ }
-	try { if (typeof SteamOverlayAPI !== 'undefined' && SteamOverlayAPI.OpenURL) SteamOverlayAPI.OpenURL(url); } catch (e2) { /* nowhere */ }
-};
-const statUrl = id => 'https://statlocker.gg/profile/' + encodeURIComponent(id);
-const chapsUrl = id => 'https://www.deadchaps.gg/player/' + encodeURIComponent(id) + '/';
 
 const rowId = row => {
 	const name = ok(row) && row.FindChildTraverse ? row.FindChildTraverse('PlayerName') : null;

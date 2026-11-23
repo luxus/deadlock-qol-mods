@@ -17,7 +17,7 @@ sh tools/ci.sh
 
 `paks/SHA256SUMS` is the sha of each pak from modlock v0.1.77. CI rebuilds every pak and fails when a sha differs. When two paks contain the same path, the lower pak number wins, so these paks do not share paths.
 
-Settings come from `lib/addon-settings`. `1.2.3` (build 9) is embedded in lobby-ranks, commend, and profile-links. `1.2.4` (build 10) is embedded in zipline-boost. The highest build hosts.
+Settings come from `lib/addon-settings`. `1.2.5` (build 11) is embedded in all mods. The highest build hosts.
 
 Each release carries the paks named in `paks/SHA256SUMS` with a `.sha256` file per pak. Install with [shiv](https://github.com/luxus/shiv) or Deadlock Mod Manager from the [luxus Deadlock Mods](https://luxus.github.io/deadlock-mods/) source.
 

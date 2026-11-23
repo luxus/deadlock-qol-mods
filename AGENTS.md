@@ -3,7 +3,7 @@
 | Rule | What enforces it |
 | --- | --- |
 | A rebuilt pak matches `paks/SHA256SUMS` | `tools/ci.sh` |
-| `addon_settings.js` exists only under `lib/addon-settings/1.2.3` and `lib/addon-settings/1.2.4` | `tools/check-one-addon-settings.sh` |
+| `addon_settings.js` exists only under `lib/addon-settings/1.2.5` | `tools/check-one-addon-settings.sh` |
 | Two mods do not contain the same path. Two paks of one mod may, so each pak still works alone | `tools/check-overlap.py` |
 | A mod README states the script `VERSION` and does not say `Not released` | `tools/check-readme.sh` |
 | A pak source does not contain a credential | `tools/check-secrets.py` |

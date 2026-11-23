@@ -70,7 +70,10 @@ def insert_after(src, anchor, block):
 
 
 def patch(name, src):
-    src = compiled(add_scripts(add_style(strip_banner(src)), name == 'hud'))
+    src = strip_banner(src)
+    if name != 'hud':
+        src = add_style(src)
+    src = compiled(add_scripts(src, name == 'hud'))
     if name == 'page':
         src = insert_after(src, '<CitadelPostGameTeam id="Team1" />', row('Team1', 6))
         src = insert_after(src, '<CitadelPostGameTeam id="Team2" />', row('Team2', 6))
