@@ -1,5 +1,6 @@
 'use strict';
 const C = { sched: 0, images: 0, created: 0 };
+const handlers = [];
 const resetCounts = () => { C.sched = 0; C.images = 0; C.created = 0; };
 let now = 0, seq = 0, jobs = [], info = [], errors = [];
 class P {
@@ -26,7 +27,7 @@ class P {
 	GetChild(i) { return this.kids[i] || null; }
 	DeleteAsync() { this.valid = false; if (this.parent) { const i = this.parent.kids.indexOf(this); if (i >= 0) this.parent.kids.splice(i, 1); } }
 	SetScaling() {}
-	SetImage(url) { C.images++; this.img = url; this.SetAttributeString('ready', '1'); this.style.visibility = 'visible'; }
+	SetImage(url) { C.images++; this.img = url; }
 }
 const H = { root: null, ctx: null, clicks: [] };
 global.GameUI = { CustomUIConfig: () => (H.root ? H.root.cfg : {}) };
@@ -38,7 +39,7 @@ global.$ = {
 	DispatchEvent(ev, p) { H.clicks.push({ ev: ev, id: typeof p === 'string' ? p : p && p.id }); },
 	Msg: m => { (/^Deadlock Profile Links:|^Addon Settings:/.test(m) ? info : errors).push(m); },
 	Language: () => 'english',
-	RegisterEventHandler() { return ++seq; },
+	RegisterEventHandler(ev, p, f) { handlers.push({ ev: ev, p: p, f: f }); return ++seq; },
 	CreatePanel: (t, parent, id) => { C.created++; return new P(t, parent, id); }
 };
 const advance = secs => {
@@ -53,9 +54,10 @@ const advance = secs => {
 	now = end;
 };
 const mk = (t, parent, id, cls, text) => { const x = new P(t, parent, id); String(cls || '').split(' ').filter(Boolean).forEach(c => x.cls.add(c)); if (text != null) x._text = text; return x; };
+const fire = (ev, p) => { handlers.filter(h => h.ev === ev && h.p === p).forEach(h => h.f()); };
 const load = src => {
-	info = []; errors = []; jobs = []; now = 0;
+	info = []; errors = []; jobs = []; handlers.length = 0; now = 0;
 	const fn = new Function(src + '\n//# sourceURL=profile.js');
 	fn();
 };
-module.exports = { C, H, mk, advance, load, resetCounts, info: () => info, errors: () => errors };
+module.exports = { C, H, mk, advance, load, fire, resetCounts, info: () => info, errors: () => errors };

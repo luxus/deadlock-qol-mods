@@ -1,7 +1,7 @@
 'use strict';
 const fs = require('fs');
 const S = require('./panorama.js');
-const { H, mk, advance, load, resetCounts, C } = S;
+const { H, mk, advance, load, fire, resetCounts, C } = S;
 const PAGE = fs.readFileSync(process.argv[2] || __dirname + '/../build/pak/panorama/scripts/profile_links.js', 'utf8');
 const BOARD = fs.readFileSync(process.argv[3] || __dirname + '/../build/pak/panorama/scripts/profile_links_scoreboard.js', 'utf8');
 let fails = 0, passes = 0;
@@ -99,6 +99,16 @@ advance(0.5);
 assert(pending(H.ctx.FindChildTraverse('PlStatlocker')), 'local card is not ready at 0.5 s');
 advance(0.4);
 assert(!pending(H.ctx.FindChildTraverse('PlStatlocker')), 'local card is ready before 1 s');
+const shot = H.ctx.FindChildTraverse('PlRankShot');
+const saved = H.ctx.FindChildTraverse('PlAccountId')._text;
+H.ctx.FindChildTraverse('PlAccountId')._text = '8888888';
+H.ctx.FindChildTraverse('AccountID')._text = '8888888';
+fire('ImageLoaded', shot);
+assert(!H.ctx.FindChildTraverse('PlRank').BHasClass('PlReady'), 'an image that loads for a different player stays hidden');
+H.ctx.FindChildTraverse('PlAccountId')._text = saved;
+H.ctx.FindChildTraverse('AccountID')._text = saved;
+fire('ImageLoaded', shot);
+assert(H.ctx.FindChildTraverse('PlRank').BHasClass('PlReady'), 'an image that still matches the player is shown');
 
 bootCard(true, true);
 H.ctx.FindChildTraverse('PlAccountId')._text = '';
