@@ -6,8 +6,8 @@ Deadlock Panorama mods by luxus, and the source that builds them.
 | --- | --- | --- |
 | `paks/lobby-ranks` | 0.2.1 | `lobby-ranks-v0.2.1` |
 | `paks/zipline-boost` | 0.1.0 | `zipline-boost-v0.1.0` |
-| `paks/commend` | 2.0.0 | not tagged |
-| `paks/profile-links` | 2.0.0 | not tagged |
+| `paks/commend` | 2.0.0 | `commend-v2.0.0` |
+| `paks/profile-links` | 2.0.0 | `profile-links-v2.0.0` |
 
 ```sh
 curl -fsSL -o tools/modlock https://github.com/paralin/modlock/releases/download/v0.1.77/modlock-linux-amd64
