@@ -182,6 +182,16 @@ assert($.PlBoard.TRIES === 9 && $.PlBoard.GAP_S === 0.15, 'scoreboard retries ar
 const rowButton = H.ctx.FindChildTraverse('P1').FindChildTraverse('PlStatlocker');
 assert(rowButton.GetAttributeString('plBound', '') === '1', 'player button is bound');
 assert(H.ctx.FindChildTraverse('Sum').FindChildTraverse('PlStatlocker').GetAttributeString('plBound', '') !== '1', 'totals row is not bound');
+H.ctx.FindChildTraverse('P1').accountid = '1111111';
+assert($.PlBoard.rowId(H.ctx.FindChildTraverse('P1')) === '4444444', 'a hidden label beats a js property');
+const propRow = mk('Panel', H.ctx, 'P2', 'Player');
+propRow.accountid = '5555555';
+mk('Label', propRow, 'PlAccountId', 'PlProbe', '');
+assert($.PlBoard.rowId(propRow) === '5555555', 'a row js property supplies the id: ' + $.PlBoard.rowId(propRow));
+const textRow = mk('Panel', H.ctx, 'P3', 'Player');
+const textLabel = mk('Label', textRow, 'PlAccountId', 'PlProbe', '');
+textLabel.SetAttributeString('text', '6666666');
+assert($.PlBoard.rowId(textRow) === '6666666', 'a text attribute supplies the id when the label text is empty');
 rowButton.events.onactivate();
 assert(H.clicks.some(c => c.id === 'https://statlocker.gg/profile/4444444'), 'scoreboard opens that row');
 H.clicks = [];
