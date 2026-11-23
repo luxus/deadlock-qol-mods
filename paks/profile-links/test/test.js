@@ -88,10 +88,11 @@ const bootCard = (menu, local, status) => {
 };
 
 bootCard(false, false);
+resetCounts();
 load(PAGE);
 advance(2);
 assert(pending(H.ctx.FindChildTraverse('PlStatlocker')), 'hover card has no text buttons');
-assert(C.images === 1, 'hover card still requests the rank');
+assert(C.images === 1, 'hover card still requests the rank: ' + C.images);
 
 bootCard(true, true);
 load(PAGE);
