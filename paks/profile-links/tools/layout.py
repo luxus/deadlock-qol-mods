@@ -166,9 +166,9 @@ def patch_board(src):
 	src = once(
 		src,
 		'<Button class="CopyBuildButton" id="CopyBuildButton" onmouseover="UIShowTextTooltip( #Citadel_HeroBuilds_CopyPostGameBuild )" onmouseout="UIHideTextTooltip()" />\n\t\t\t\t</Panel>\n\t\t\t</Panel>',
-		'<Button class="CopyBuildButton" id="CopyBuildButton" onmouseover="UIShowTextTooltip( #Citadel_HeroBuilds_CopyPostGameBuild )" onmouseout="UIHideTextTooltip()" />\n'
+		'<Button class="CopyBuildButton" id="CopyBuildButton" onmouseover="UIShowTextTooltip( #Citadel_HeroBuilds_CopyPostGameBuild )" onmouseout="UIHideTextTooltip()" />\n\t\t\t\t</Panel>\n'
 		+ slot
-		+ '\t\t\t\t</Panel>\n\t\t\t</Panel>',
+		+ '\t\t\t</Panel>',
 		'slot',
 	)
 	return BANNER + src
