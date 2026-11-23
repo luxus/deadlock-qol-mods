@@ -18,6 +18,7 @@ const world = (screen) => {
 	const mate = mk('Panel', team1, 'Mate', 'Player');
 	mk('Label', mate, 'PlayerName', 'PlayerName', 'Mate');
 	mk('Button', mate, 'CommendPlayerButton');
+	mk('Panel', team1, 'TeamReturn', 'CanReturnCommend');
 	const team2 = mk('Panel', post, 'Team2Screen', 'Team2');
 	const foe = mk('Panel', team2, 'Foe', 'Player');
 	mk('Label', foe, 'PlayerName', 'PlayerName', 'Foe');
@@ -49,7 +50,8 @@ assert(shown(row.FindChild('DcTeam_Team1')), 'team button visible when the switc
 click('team');
 const activated = H.clicks.filter(c => c.ev === 'Activated').map(c => c.id);
 assert(activated.indexOf('CommendPlayerButton') >= 0 && activated.filter(id => id === 'CommendPlayerButton').length === 1, 'team clicks the teammate once: ' + activated.join(','));
-assert(activated.indexOf('ReturnButton') < 0, 'team does not click return');
+assert(activated.indexOf('TeamReturn') >= 0, 'team clicks a return-kind target on the same team: ' + activated.join(','));
+assert(activated.indexOf('ReturnButton') < 0, 'a return target with no team is not a team click');
 H.clicks = [];
 click('team');
 assert(H.clicks.length === 0, 'second team click sends nothing');
