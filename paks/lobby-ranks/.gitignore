@@ -1,0 +1,4 @@
+build/
+*.vpk
+vanilla/*.vxml_c
+/tmp/

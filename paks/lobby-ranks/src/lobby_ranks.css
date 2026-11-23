@@ -1,0 +1,56 @@
+/* Deadlock Lobby Ranks — hidden account-id probes and a compact rank badge
+   in the Escape menu player list. Written from scratch. */
+
+.LrProbe {
+	visibility: collapse;
+	width: 0px;
+	height: 0px;
+	margin: 0px;
+	padding: 0px;
+}
+
+.LrBadge {
+	width: 30px;
+	height: 30px;
+	margin-left: 6px;
+	vertical-align: center;
+	horizontal-align: right;
+}
+
+.LrBadge.LrHidden {
+	visibility: collapse;
+}
+
+.LrRight {
+	horizontal-align: right;
+	vertical-align: center;
+	flow-children: right;
+	margin-right: 4px;
+}
+
+.LrParty {
+	flow-children: right;
+	vertical-align: center;
+	margin-right: 2px;
+}
+
+.LrPartyIcon {
+	width: 12px;
+	height: 18px;
+	margin-right: -3px;
+	vertical-align: center;
+	wash-color: #ffffff;
+}
+
+.LrPartyC0 .LrPartyIcon { wash-color: #ff6b6b; }
+.LrPartyC1 .LrPartyIcon { wash-color: #4dabf7; }
+.LrPartyC2 .LrPartyIcon { wash-color: #69db7c; }
+.LrPartyC3 .LrPartyIcon { wash-color: #ffd43b; }
+.LrPartyC4 .LrPartyIcon { wash-color: #da77f2; }
+.LrPartyC5 .LrPartyIcon { wash-color: #ff922b; }
+
+.LrPartyBridge {
+	width: 260px;
+	height: 30px;
+	visibility: collapse;
+}
