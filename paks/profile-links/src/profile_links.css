@@ -125,6 +125,13 @@
 	overflow: clip;
 }
 
+.PlRankCard .PlRankBox {
+	width: 48px;
+	height: 44px;
+	horizontal-align: center;
+	vertical-align: center;
+}
+
 .PlRankCard .PlPlaceholder,
 .PlRankCard .PlImageBox,
 .PlRankCard .PlPlaceholderSlot {

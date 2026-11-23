@@ -50,6 +50,7 @@ assert(hud.includes('profile_links_register.vjs_c') && !hud.includes('profile_li
 const css = read('panorama/styles/profile_links.css');
 assert(css.includes('width: 420px;') && css.includes('margin-right: 6px;') && css.includes('brightness: 1.15;'), 'name row measurements');
 assert(css.includes('min-height: 54px;') && css.includes('background-color: #050708e8;') && css.includes('font-size: 13px;'), 'account row stays visible and styled');
+assert(css.includes('.PlRankCard .PlRankBox') && css.includes('width: 48px;') && css.includes('height: 44px;'), 'card rank box fills the 48 by 44 area');
 assert(css.includes('#69e799') && css.includes('#f0b35a') && css.includes('brightness: 0.72;'), 'card button colours');
 const scss = read('panorama/styles/profile_links_scoreboard.css');
 assert(scss.includes('width: 34px;') && scss.includes('pre-transform-scale2d: 1.12;') && scss.includes('TotalsRow'), 'scoreboard slot measurements');
