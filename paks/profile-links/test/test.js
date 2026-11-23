@@ -100,6 +100,17 @@ H.ctx.FindChildTraverse('UserName')._text = 'Bea';
 advance(1.2);
 assert(!pending(H.ctx.FindChildTraverse('PlStatlocker')), 'a later player on the same card still gets a fresh wait');
 
+bootCard(true, true);
+load(PAGE);
+advance(0.4);
+H.ctx.AddClass('Loading');
+advance(0.2);
+H.ctx.RemoveClass('Loading');
+advance(0.5);
+assert(pending(H.ctx.FindChildTraverse('PlStatlocker')), 'a loading gap restarts the stability wait');
+advance(0.5);
+assert(!pending(H.ctx.FindChildTraverse('PlStatlocker')), 'the wait completes after the restarted gap');
+
 bootCard(true, false, '');
 load(PAGE);
 advance(2);

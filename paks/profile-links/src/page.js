@@ -217,13 +217,16 @@ const cardMain = () => {
 	const st = { phase: 'seek', prev: null, since: 0, started: nowMs(), watchAt: 0, seenLoad: has(ctx, 'Loading'), confirmed: '', id: '', timer: null, gen: 0, seeking: true, failed: false };
 
 	const read = () => {
-		const id = agreeIds([textOf(probe), textOf(account)]);
+		const picked = [];
+		[textOf(probe), textOf(account)].forEach(v => { const one = pageId(v); if (one && picked.indexOf(one) < 0) picked.push(one); });
+		const conflict = picked.length > 1;
+		const id = conflict ? '' : (picked[0] || '');
 		const name = treeText(user);
 		const status = treeText(rich);
 		const local = localPlayer();
 		const loading = has(ctx, 'Loading');
 		const fp = id + '|' + name + '|' + treeText(nick) + '|' + (local ? '1' : '0');
-		return { id: id, name: name, status: status, local: local, loading: loading, fp: fp };
+		return { id: id, name: name, status: status, local: local, loading: loading, conflict: conflict, fp: fp };
 	};
 	const links = on => {
 		const show = on && inMenu();
@@ -270,10 +273,12 @@ const cardMain = () => {
 			return;
 		}
 		const fresh = row.local || (st.seenLoad && !row.loading) || row.fp !== st.confirmed;
-		const same = st.prev && st.prev.fp === row.fp && st.prev.status === row.status && st.prev.id === row.id && st.prev.name === row.name && st.prev.local === row.local;
+		const ready = !row.loading && !row.conflict && row.id && row.name && fresh;
+		const same = ready && st.prev && st.prev.fp === row.fp && st.prev.status === row.status && st.prev.id === row.id && st.prev.name === row.name && st.prev.local === row.local;
 		const wait = row.local || row.status ? CARD_FAST_MS : CARD_SLOW_MS;
-		if (!row.loading && row.id && row.name && fresh && same && st.since && t - st.since >= wait) { settle(row); return; }
-		if (!same) { st.prev = row; st.since = t; }
+		if (!ready) { st.prev = null; st.since = 0; }
+		else if (!same) { st.prev = row; st.since = t; }
+		else if (st.since && t - st.since >= wait) { settle(row); return; }
 		if (t - st.started >= CARD_GIVEUP_MS) { st.phase = 'giveup'; st.seeking = false; st.watchAt = t; hide(); }
 		arm(0.1);
 	}
