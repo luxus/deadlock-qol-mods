@@ -42,6 +42,8 @@ done
 
 echo "== readme =="
 sh tools/check-readme.sh
+echo "== trace =="
+python3 tools/check-trace.py
 echo "== overlap =="
 python3 tools/check-overlap.py --self-test
 python3 tools/check-overlap.py

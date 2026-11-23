@@ -7,6 +7,11 @@ Credits
   Zip Boost overlay in QOLLOCK by civo7 (https://github.com/civo7/QOLLOCK),
   Apache License 2.0. See paks/zipline-boost/NOTICE for the files and the changes.
 - lobby-ranks: written from scratch, MIT (paks/lobby-ranks/LICENSE).
+- commend: written from scratch against docs/cleanroom-spec/commend.md, MIT (paks/commend/LICENSE).
+  Settings strings are Kai's. Button labels on the row are fixed English.
+- profile-links: written from scratch against docs/cleanroom-spec/profile-links.md, MIT
+  (paks/profile-links/LICENSE). Settings strings are Kai's. The 64x64 logos are the
+  Statlocker and DeadChaps site icons, scaled with Lanczos and compiled by tools/vtex.py.
 - lib/addon-settings: Addon Settings by luxus, MIT, vendored unchanged from
   https://github.com/luxus/improved-quickbuy.
 - Rank badge images come from the deadlock-api.com API
