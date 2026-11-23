@@ -199,12 +199,11 @@ const act = kind => {
 	for (let i = 0; i < targets.length; i++) {
 		const target = targets[i].p;
 		const k = kindOf(target);
-		if (kind !== 'all' && kind !== 'return' && k === 'return') continue;
+		// SG-C2: only Return is limited to return-kind targets. Team, Enemy and All take every kind.
 		if (kind === 'return' && k !== 'return') continue;
-		if (kind !== 'return' && k === 'return') continue;
 		const owner = ownerOf(target);
 		if (excluded(target, owner, kind)) continue;
-		const team = teamOf(owner) || teamOf(target);
+		const team = teamOf(owner);
 		if (kind === 'team' && (!mine || !team || team !== mine)) continue;
 		if (kind === 'enemy' && (!mine || !team || team === mine)) continue;
 		const name = ownerName(owner);
