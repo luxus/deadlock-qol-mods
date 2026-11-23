@@ -1,0 +1,20 @@
+deadlock-qol-mods: Deadlock Panorama mods by luxus.
+
+Copyright (c) 2026 Kai Löhnert (luxus). MIT (LICENSE), unless a file says otherwise.
+
+Credits
+- zipline-boost: the overlay's structure, placement and icon are adapted from the
+  Zip Boost overlay in QOLLOCK by civo7 (https://github.com/civo7/QOLLOCK),
+  Apache License 2.0. See paks/zipline-boost/NOTICE for the files and the changes.
+- lobby-ranks: written from scratch, MIT (paks/lobby-ranks/LICENSE).
+- lib/addon-settings: Addon Settings by luxus, MIT, vendored unchanged from
+  https://github.com/luxus/improved-quickbuy.
+- Rank badge images come from the deadlock-api.com API
+  (https://api.deadlock-api.com), fetched at runtime and not stored here.
+- Files under paks/*/vanilla/ are Valve's Deadlock layouts, decompiled from the
+  game's pak01_dir.vpk with modlock as the unmodified input for tools/layout.py.
+  They belong to Valve. hud.xml.reference is a reference copy and is not shipped.
+- Paks are compiled with modlock (https://github.com/paralin/modlock, MIT), v0.1.77.
+
+Third-party services contacted
+- api.deadlock-api.com: rank badge images (lobby-ranks).
