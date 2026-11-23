@@ -1,0 +1,15 @@
+<!-- Deadlock Zipline Boost overlay. Loaded onto #ZbRoot under #gameplay_hud by BLoadLayout, so these
+     styles reach the overlay wherever it hangs. Structure follows QOLLOCK's Zip Boost overlay (see NOTICE). -->
+<root>
+	<styles>
+		<include src="s2r://panorama/styles/citadel_base_styles.vcss_c" />
+		<include src="s2r://panorama/styles/zipline_boost.vcss_c" />
+	</styles>
+	<Panel class="ZbOverlay" hittest="false">
+		<Panel id="ZbIcon" hittest="false" />
+		<Panel id="ZbText" hittest="false">
+			<Label id="ZbTitle" hittest="false" text="" />
+			<Label id="ZbState" hittest="false" text="" />
+		</Panel>
+	</Panel>
+</root>

@@ -1,0 +1,15 @@
+Deadlock Zipline Boost
+Copyright (c) luxus. Licensed under the MIT License (LICENSE).
+
+src/zipline_boost.css, src/zipline_boost_overlay.xml and the inline fallback styles in
+src/main.js adapt the overlay structure, placement and icon from QOLLOCK
+panorama/styles/features/ql_feat_zip_boost.css and
+panorama/scripts/manifests/ql_zipboost/manifest.js:
+  QOLLOCK, https://github.com/civo7/QOLLOCK
+  Licensed under the Apache License, Version 2.0
+  (http://www.apache.org/licenses/LICENSE-2.0).
+Changes: renamed ids and classes, own backdrop and text shadow, no animations,
+visibility driven from script.
+
+The zipline icon (panorama/images/upgrades/mods_utility/zipline_mastery_psd.vtex) is a
+Valve Deadlock game resource referenced by path, not shipped.

@@ -1,0 +1,22 @@
+<!-- Valve layout, decompiled from lea pak01_dir.vpk (game update 18 Nov 2026, Europe/Zurich). Unmodified source for tools/layout.py. -->
+<root>
+	<styles>
+		<include src="s2r://panorama/styles/citadel_base_styles.vcss" />
+		<include src="s2r://panorama/styles/citadel_hud_ability_button_hint.vcss" />
+	</styles>
+	<Panel class="buttonContainer">
+		<Panel id="icon_container">
+			<Image id="ability_image" />
+		</Panel>
+		<Panel class="buttonRow">
+			<CitadelBinding id="BindingComponent1" />
+			<Label id="slash" class="action_label" text="/" />
+			<Label id="plus" class="action_label" text="+" />
+			<CitadelBinding id="BindingComponent2" />
+			<Image id="AbilityImage" />
+			<Label id="context_label" class="action_label" html="true" text="&#60;empty&#62;" />
+		</Panel>
+		<Label class="cooldownNotice" text="#Citadel_ZiplineBoost_Cooldown" />
+		<Label class="activeNotice" text="#Citadel_ZiplineBoost_Active" />
+	</Panel>
+</root>
