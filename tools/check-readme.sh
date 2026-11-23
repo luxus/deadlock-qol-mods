@@ -21,6 +21,8 @@ check_mod() {
 }
 check_mod paks/lobby-ranks paks/lobby-ranks/src/main.js
 check_mod paks/zipline-boost paks/zipline-boost/src/main.js
+check_mod paks/commend paks/commend/src/main.js
+check_mod paks/profile-links paks/profile-links/src/page.js
 if grep -q -e "tools/build.py" -e "make_vtex.py" README.md; then
 	echo "README.md still names tools/build.py or make_vtex.py. Those files are gone. Document sh tools/ci.sh." >&2
 	fail=1
