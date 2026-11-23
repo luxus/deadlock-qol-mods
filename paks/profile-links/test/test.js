@@ -1,0 +1,130 @@
+'use strict';
+const fs = require('fs');
+const S = require('./panorama.js');
+const { H, mk, advance, load, resetCounts, C } = S;
+const PAGE = fs.readFileSync(process.argv[2] || __dirname + '/../build/pak/panorama/scripts/profile_links.js', 'utf8');
+const BOARD = fs.readFileSync(process.argv[3] || __dirname + '/../build/pak/panorama/scripts/profile_links_scoreboard.js', 'utf8');
+let fails = 0, passes = 0;
+const assert = (c, m) => { if (c) passes++; else { fails++; console.log('FAIL', m); } };
+const pending = p => !!(p && p.BHasClass('PlPending'));
+
+const bootPage = () => {
+	H.clicks = [];
+	H.root = mk('Panel', null, 'UI');
+	H.root.cfg = {};
+	const page = H.ctx = mk('CitadelProfilePage', H.root, 'CitadelProfilePage');
+	const info = mk('Panel', page, 'ProfileInfo');
+	const row = mk('Panel', info, 'PlNameRow', 'PlNameRow');
+	mk('Button', row, 'PlStatlocker', 'PlLink PlStatlocker PlPending');
+	mk('Button', row, 'PlDeadchaps', 'PlLink PlDeadchaps PlPending');
+	mk('Label', row, 'SelfName', '', 'Kai');
+	mk('Label', info, 'PlAccountId', 'PlProbe', '1234567');
+	mk('Label', info, 'FriendID', 'FriendID', 'Friend code 1234567');
+	const rank = mk('Panel', info, 'PlRank', 'PlRank PlRankPage PlLoading');
+	mk('Panel', rank, 'PlRankImage', 'PlImageBox');
+	return page;
+};
+
+bootPage();
+load(PAGE);
+assert(S.errors().length === 0, 'page loads: ' + S.errors().join(' | '));
+assert($.PlTest.VERSION === '2.0.0', 'version');
+assert($.PlTest.pageId('1234567') === '1234567', 'plain account id');
+assert($.PlTest.pageId('[U:1:2000001]') === '2000001', 'steam id 3');
+assert($.PlTest.pageId('76561198000000000') === '39734272', 'steam64: ' + $.PlTest.pageId('76561198000000000'));
+assert($.PlTest.pageId('{i:account_id}') === '' && $.PlTest.pageId('#Citadel_Profile_FriendID') === '' && $.PlTest.pageId('nan') === '', 'tokens and nan are not ids');
+assert($.PlTest.pageId('99') === '', 'below the minimum');
+assert($.PlTest.pageId('account id: 1,234,567') === '1234567', 'phrase with separators');
+assert($.PlTest.agreeIds(['1111111', '2222222']) === '', 'two ids are a conflict');
+assert($.PlTest.agreeIds(['1111111', 'not an id', '1111111']) === '1111111', 'one distinct id wins');
+assert($.PlTest.boardId('id 3333333') === '3333333', 'scoreboard digits');
+assert($.PlTest.boardId('0') === '' && $.PlTest.boardId('12') === '', 'bot and short ids do nothing');
+assert($.PlTest.statUrl('1234567') === 'https://statlocker.gg/profile/1234567', 'statlocker url');
+assert($.PlTest.chapsUrl('1234567') === 'https://www.deadchaps.gg/player/1234567/', 'deadchaps url');
+assert($.PlTest.rankUrl('1234567').indexOf('/rank/image?format=webp') > 0, 'rank image url');
+
+const stat = H.ctx.FindChildTraverse('PlStatlocker');
+advance(0.2);
+assert(pending(stat), 'logos stay hidden before the id settles');
+assert(C.created === 0, 'no rank image before the id settles');
+advance(2.2);
+assert(!pending(stat) && !pending(H.ctx.FindChildTraverse('PlDeadchaps')), 'both logos show together after 2 s');
+assert(C.created === 1 && C.images === 1, 'one rank image request: ' + C.created + '/' + C.images);
+resetCounts();
+advance(1);
+assert(C.created === 0 && C.images === 0, 'a settled page does not request the image again');
+stat.events.onactivate();
+assert(H.clicks.some(c => c.ev === 'ExternalBrowserGoToURL' && c.id === 'https://statlocker.gg/profile/1234567'), 'statlocker click: ' + JSON.stringify(H.clicks));
+
+const bootCard = (menu, local, status) => {
+	H.clicks = [];
+	H.root = mk('Panel', null, 'UI');
+	H.root.cfg = H.root.cfg || {};
+	const host = menu ? mk('Panel', H.root, 'ContextMenuBody', 'ContextMenuBody') : H.root;
+	const card = H.ctx = mk('CitadelProfileCard', host, 'Card', local ? 'isLocalPlayer' : '');
+	mk('Label', card, 'PlAccountId', 'PlProbe', '2222222');
+	mk('Label', card, 'AccountID', 'AccountID', '2222222');
+	mk('Label', card, 'UserName', '', 'Ada');
+	mk('Label', card, 'UserNickname', '', '');
+	mk('Label', card, 'UserRichPresence', '', status || '');
+	const rank = mk('Panel', card, 'PlRank', 'PlRank PlRankCard PlIdle');
+	mk('Panel', rank, 'PlRankImage', 'PlImageBox');
+	mk('Button', card, 'PlStatlocker', 'PlText PlLink PlStatlocker PlPending');
+	mk('Button', card, 'PlDeadchaps', 'PlText PlLink PlDeadchaps PlPending');
+	return card;
+};
+
+bootCard(false, false);
+load(PAGE);
+advance(2);
+assert(pending(H.ctx.FindChildTraverse('PlStatlocker')), 'hover card has no text buttons');
+assert(C.images === 1, 'hover card still requests the rank');
+
+bootCard(true, true);
+load(PAGE);
+advance(0.5);
+assert(pending(H.ctx.FindChildTraverse('PlStatlocker')), 'local card is not ready at 0.5 s');
+advance(0.4);
+assert(!pending(H.ctx.FindChildTraverse('PlStatlocker')), 'local card is ready before 1 s');
+
+bootCard(true, false, '');
+load(PAGE);
+advance(0.9);
+assert(pending(H.ctx.FindChildTraverse('PlDeadchaps')), 'a quiet card waits past 0.75 s');
+advance(0.8);
+assert(!pending(H.ctx.FindChildTraverse('PlDeadchaps')), 'a quiet card is ready after 1.5 s');
+
+const bootBoard = () => {
+	H.clicks = [];
+	H.root = mk('Panel', null, 'UI');
+	H.root.cfg = {};
+	const board = H.ctx = mk('CitadelPostGameScoreboardNew', H.root, 'CitadelPostGameScoreboardNew', 'PlScoreboard');
+	const row = mk('Panel', board, 'P1', 'Player');
+	mk('Label', row, 'PlAccountId', 'PlProbe', '4444444');
+	mk('Label', row, 'PlayerName', '', 'Kai');
+	mk('Button', row, 'PlStatlocker', 'PlLink PlStatlocker');
+	mk('Button', row, 'PlDeadchaps', 'PlLink PlDeadchaps');
+	const bot = mk('Panel', board, 'Bot', 'Player');
+	mk('Label', bot, 'PlAccountId', 'PlProbe', '0');
+	mk('Button', bot, 'PlStatlocker', 'PlLink PlStatlocker');
+	const total = mk('Panel', board, 'Sum', 'Player TotalsRow');
+	mk('Button', total, 'PlStatlocker', 'PlLink PlStatlocker');
+	return board;
+};
+bootBoard();
+load(BOARD);
+assert($.PlBoard.TRIES === 9 && $.PlBoard.GAP_S === 0.15, 'scoreboard retries are bounded');
+const rowButton = H.ctx.FindChildTraverse('P1').FindChildTraverse('PlStatlocker');
+assert(rowButton.GetAttributeString('plBound', '') === '1', 'player button is bound');
+assert(H.ctx.FindChildTraverse('Sum').FindChildTraverse('PlStatlocker').GetAttributeString('plBound', '') !== '1', 'totals row is not bound');
+rowButton.events.onactivate();
+assert(H.clicks.some(c => c.id === 'https://statlocker.gg/profile/4444444'), 'scoreboard opens that row');
+H.clicks = [];
+H.ctx.FindChildTraverse('Bot').FindChildTraverse('PlStatlocker').events.onactivate();
+assert(H.clicks.length === 0, 'bot click does nothing');
+resetCounts();
+advance(2);
+assert(C.sched <= 10, 'scoreboard stops scheduling after 1.2 s: ' + C.sched);
+
+console.log(passes + ' passed, ' + fails + ' failed');
+process.exit(fails ? 1 : 0);

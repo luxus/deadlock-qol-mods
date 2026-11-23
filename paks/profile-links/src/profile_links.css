@@ -1,0 +1,241 @@
+/* Profile page and profile card. Measured values from the clean-room spec, section 2. */
+
+.PlProbe {
+	visibility: collapse;
+	width: 0px;
+	height: 0px;
+	margin: 0px;
+	padding: 0px;
+}
+
+.PlNameRow {
+	width: 420px;
+	height: 36px;
+	flow-children: right;
+	overflow: noclip;
+}
+
+.PlNameRow .PlLink {
+	height: 24px;
+	width: fit-children;
+	horizontal-align: left;
+	vertical-align: center;
+	margin-right: 6px;
+	padding: 0px;
+	overflow: noclip;
+	background-color: none;
+	border: 0px solid #00000000;
+	brightness: 1.0;
+	transition-property: brightness;
+	transition-duration: 0.12s;
+}
+
+.PlNameRow .PlLink:hover {
+	brightness: 1.15;
+}
+
+.PlNameRow .PlLogo {
+	width: 24px;
+	height: 24px;
+	vertical-align: center;
+	background-size: contain;
+	background-repeat: no-repeat;
+	background-position: center;
+	hittest: false;
+}
+
+.PlPending {
+	visibility: collapse;
+}
+
+.PlOff .PlLink,
+.PlOff .PlRank,
+.PlNoStatlocker .PlStatlocker,
+.PlNoDeadchaps .PlDeadchaps {
+	visibility: collapse;
+}
+
+/* SPEC-OPEN O-P6: the account row stays visible even without ShowAccountID and when the addon is off. */
+#AccountID {
+	visibility: visible;
+	width: 100%;
+	min-height: 54px;
+	flow-children: right;
+	vertical-align: center;
+	background-color: #050708e8;
+	padding: 3px 8px 3px 8px;
+}
+
+#AccountID .AccountID {
+	width: fill-parent-flow(1);
+	vertical-align: center;
+	color: #9aa8ae;
+	font-size: 13px;
+}
+
+.PlRank {
+	overflow: noclip;
+}
+
+.PlRankPage {
+	width: 120px;
+	height: 104px;
+	margin-top: 12px;
+	vertical-align: center;
+	overflow: noclip;
+}
+
+.PlRankPage .PlRankBox {
+	width: 120px;
+	height: 104px;
+	margin: 0px;
+	overflow: clip;
+}
+
+.PlRankPage .PlPlaceholder {
+	width: 110px;
+	height: 92px;
+	horizontal-align: center;
+	vertical-align: center;
+	overflow: clip;
+}
+
+.PlRankPage .PlPlaceholderSlot {
+	width: 110px;
+	height: 88px;
+	horizontal-align: center;
+	vertical-align: center;
+}
+
+.PlRankPage .PlPlaceholderImage {
+	width: 100%;
+	height: 100%;
+	background-size: contain;
+	background-repeat: no-repeat;
+	background-position: center;
+	opacity: 0.72;
+	pre-transform-scale2d: 0.92;
+}
+
+.PlRankCard {
+	width: 48px;
+	height: 44px;
+	margin-left: 8px;
+	vertical-align: center;
+	overflow: clip;
+}
+
+.PlRankCard .PlPlaceholder,
+.PlRankCard .PlImageBox,
+.PlRankCard .PlPlaceholderSlot {
+	width: 44px;
+	height: 34px;
+	horizontal-align: center;
+	vertical-align: center;
+	overflow: clip;
+}
+
+.PlRankCard .PlImageBox {
+	height: 32px;
+}
+
+.PlRankCard .PlPlaceholderImage {
+	width: 100%;
+	height: 100%;
+	background-size: contain;
+	background-repeat: no-repeat;
+	background-position: center;
+	opacity: 0.72;
+	pre-transform-scale2d: 1.15;
+}
+
+.PlSpinner {
+	horizontal-align: center;
+	vertical-align: center;
+	z-index: 3;
+	background-size: contain;
+	background-repeat: no-repeat;
+	background-position: center;
+	wash-color: #d9ffff;
+	opacity: 0.92;
+	animation-name: PlSpin;
+	animation-duration: 1.1s;
+	animation-timing-function: linear;
+	animation-iteration-count: infinite;
+}
+
+.PlRankPage .PlSpinner {
+	width: 24px;
+	height: 24px;
+}
+
+.PlRankCard .PlSpinner {
+	width: 20px;
+	height: 20px;
+}
+
+@keyframes 'PlSpin' {
+	0% { transform: rotateZ(0deg); }
+	100% { transform: rotateZ(360deg); }
+}
+
+.PlRankPage .PlImageBox {
+	width: 110px;
+	height: 76px;
+	horizontal-align: center;
+	vertical-align: center;
+	overflow: clip;
+}
+
+.PlImageBox Image,
+.PlRankShot {
+	width: 100%;
+	height: 100%;
+	background-size: contain;
+	background-repeat: no-repeat;
+	background-position: center;
+}
+
+.PlRank.PlIdle { visibility: collapse; }
+.PlRank.PlLoading .PlPlaceholder,
+.PlRank.PlLoading .PlSpinner { visibility: visible; }
+.PlRank.PlLoading .PlImageBox { visibility: collapse; }
+.PlRank.PlReady .PlPlaceholder,
+.PlRank.PlReady .PlSpinner { visibility: collapse; }
+.PlRank.PlReady .PlImageBox { visibility: visible; }
+.PlRank.PlMissing .PlSpinner,
+.PlRank.PlMissing .PlImageBox { visibility: collapse; }
+.PlRank.PlMissing .PlPlaceholder { visibility: visible; }
+
+CitadelProfileCard.Loading .PlRankCard { visibility: collapse; }
+
+.PlText {
+	width: 100%;
+	height: 42px;
+	padding-left: 12px;
+	background-color: #0d1110;
+	brightness: 0.72;
+	transition-property: background-color, brightness;
+	transition-duration: 0.10s;
+}
+
+.PlText:hover {
+	background-color: #19201d;
+	brightness: 1.25;
+}
+
+.PlText Label {
+	margin-left: 8px;
+	horizontal-align: left;
+	vertical-align: center;
+	font-size: 16px;
+	font-weight: semi-bold;
+	text-overflow: shrink;
+	text-decoration: none;
+}
+
+.PlText.PlStatlocker Label { color: #69e799; }
+.PlText.PlDeadchaps {
+	border-bottom: 1px solid #f0b35a;
+}
+.PlText.PlDeadchaps Label { color: #f0b35a; }
