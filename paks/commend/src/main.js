@@ -20,17 +20,15 @@ const top = () => {
 	while (ok(a)) { last = a; a = a.GetParent(); }
 	return last;
 };
+// SG-C3: depth-first, the panel before its children, children in layout order, no visit cap.
 const walk = (root, fn) => {
-	const stack = [root];
-	let n = 0;
-	while (stack.length && n < 8000) {
-		const p = stack.pop();
-		n++;
-		if (!ok(p)) continue;
+	const go = p => {
+		if (!ok(p)) return;
 		fn(p);
 		const c = p.GetChildCount ? p.GetChildCount() : 0;
-		for (let i = 0; i < c; i++) stack.push(p.GetChild(i));
-	}
+		for (let i = 0; i < c; i++) go(p.GetChild(i));
+	};
+	go(root);
 };
 const flagged = (p, classes, ids, depth) => {
 	for (let n = 0, a = p; ok(a) && n < depth; a = a.GetParent(), n++) {
@@ -269,4 +267,4 @@ if (ok(ctx)) {
 	try { apply(true); } catch (e) { say('load ' + (e && e.message ? e.message : e)); }
 	arm();
 }
-$.DcTest = { VERSION: VERSION, TICK_S: TICK_S, act: act, apply: apply, kindOf: kindOf, teamOf: teamOf, ownerOf: ownerOf, ownerName: ownerName };
+$.DcTest = { VERSION: VERSION, TICK_S: TICK_S, act: act, apply: apply, kindOf: kindOf, teamOf: teamOf, ownerOf: ownerOf, ownerName: ownerName, firstText: firstText };
