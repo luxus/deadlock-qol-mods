@@ -99,9 +99,11 @@ assert(C.images === 1, 'hover card still requests the rank: ' + C.images);
 
 bootCard(true, true);
 load(PAGE);
-advance(0.5);
-assert(pending(H.ctx.FindChildTraverse('PlStatlocker')), 'local card is not ready at 0.5 s');
+advance(0.1);
+assert(pending(H.ctx.FindChildTraverse('PlStatlocker')), 'the card has not read at 0.1 s');
 advance(0.4);
+assert(pending(H.ctx.FindChildTraverse('PlStatlocker')), 'local card is not ready at 0.5 s');
+advance(0.45);
 assert(!pending(H.ctx.FindChildTraverse('PlStatlocker')), 'local card is ready before 1 s');
 const shot = H.ctx.FindChildTraverse('PlRankShot');
 const saved = H.ctx.FindChildTraverse('PlAccountId')._text;
