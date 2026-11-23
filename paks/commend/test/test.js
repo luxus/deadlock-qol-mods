@@ -73,6 +73,10 @@ const mid = mk('Panel', owner, 'Mid');
 const named = mk('Panel', mid, 'PlayerName');
 mk('Label', named, 'Leaf', '', '  Nested  Name  ');
 assert($.DcTest.ownerName(owner) === 'nested  name', 'name is the nested label, inner spaces kept: ' + $.DcTest.ownerName(owner));
+const ordered = mk('Panel', H.root, 'Ordered');
+mk('Label', ordered, 'A', '', 'First');
+mk('Label', ordered, 'B', '', 'Second');
+assert($.DcTest.firstText(ordered) === 'first', 'search visits child 0 before later siblings: ' + $.DcTest.firstText(ordered));
 
 world('Team1');
 load(SRC);
