@@ -1,34 +1,11 @@
-const plTop = () => {
-	let a = $.GetContextPanel(), last = a;
-	while (a && a.IsValid && a.IsValid()) { last = a; a = a.GetParent(); }
-	return last;
-};
-const plWalk = (root, fn) => {
-	const stack = [root];
-	let n = 0;
-	while (stack.length && n < 8000) {
-		const p = stack.pop();
-		n++;
-		if (!p || !p.IsValid || !p.IsValid()) continue;
-		fn(p);
-		const c = p.GetChildCount ? p.GetChildCount() : 0;
-		for (let i = 0; i < c; i++) stack.push(p.GetChild(i));
-	}
-};
+// SG-P13: this layout sets the three classes on its own context panel only.
 const plApply = v => {
+	const panel = $.GetContextPanel();
+	if (!panel || !panel.IsValid || !panel.IsValid()) return;
 	const on = !!(v && v.on);
 	const stat = !v || v.statlocker !== false;
 	const chaps = !v || v.deadchaps !== false;
-	const root = plTop();
-	if (!root) return;
-	plWalk(root, p => {
-		let type = '';
-		try { type = String(p.paneltype || ''); } catch (e) { type = ''; }
-		let score = false;
-		try { score = !!(p.BHasClass && p.BHasClass('PlScoreboard')); } catch (e2) { score = false; }
-		if (type !== 'CitadelProfilePage' && type !== 'CitadelProfileCard' && !score) return;
-		p.SetHasClass('PlOff', !on);
-		p.SetHasClass('PlNoStatlocker', !stat);
-		p.SetHasClass('PlNoDeadchaps', !chaps);
-	});
+	panel.SetHasClass('PlOff', !on);
+	panel.SetHasClass('PlNoStatlocker', !stat);
+	panel.SetHasClass('PlNoDeadchaps', !chaps);
 };

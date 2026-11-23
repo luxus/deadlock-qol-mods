@@ -23,6 +23,8 @@ assert(settings.includes('needs: [\'on\']') || settings.includes('needs: ["on"]'
 assert(settings.includes('const BUILD = 9;'), 'addon settings build 9');
 assert(settings.includes('Deadlock Profile Links: 2.0.0 loaded'), 'loaded log line');
 assert(read('panorama/scripts/profile_links_register.js').includes('Deadlock Profile Links: 2.0.0 register hud'), 'hud log line');
+assert(read('panorama/scripts/profile_links_register.js').includes('AddonSettings.register(PL_SCHEMA, () => {})'), 'hud registrar callback does nothing');
+assert(!read('panorama/scripts/profile_links_settings.js').includes('plWalk'), 'settings does not walk the ui tree');
 
 const profile = read('panorama/layout/citadel_db_page_profile.xml');
 assert(profile.includes('id="PlNameRow"') && profile.includes('id="SelfName"'), 'name row keeps SelfName');
