@@ -64,6 +64,11 @@ assert(H.clicks.filter(c => c.ev === 'CitadelPostGameCommendPlayer').some(c => c
 const foeBtn = H.ctx.FindChildTraverse('Team2Screen').FindChildTraverse('CommendPlayerButton');
 assert(foeBtn.GetAttributeString('dcHit', '') === '1', 'clicked foe is marked');
 
+const details = mk('Panel', H.ctx.FindChildTraverse('Team2Screen'), 'Det', 'MVPDetails');
+mk('Label', details, 'MVPPlayerName', '', 'Foe');
+const mvpMask = mk('Panel', details, 'MVPHeroScenePanelMask');
+assert($.DcTest.ownerOf(mvpMask).id === 'Det', 'MVP mask owner is .MVPDetails, not the mask');
+
 world('Team1');
 load(SRC);
 advance(0);

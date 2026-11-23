@@ -51,12 +51,14 @@ const firstText = p => {
 	});
 	return hit;
 };
+// The mask is only the fallback. An owner class further up, such as .MVPDetails, wins.
 const ownerOf = target => {
+	let mask = null;
 	for (let n = 0, a = target; ok(a) && n < 64; a = a.GetParent(), n++) {
 		for (let i = 0; i < OWNER_CLASS.length; i++) if (has(a, OWNER_CLASS[i])) return a;
-		if (pid(a) === 'MVPHeroScenePanelMask') return a;
+		if (!mask && pid(a) === 'MVPHeroScenePanelMask') mask = a;
 	}
-	return target;
+	return mask || target;
 };
 const ownerName = owner => {
 	if (!ok(owner)) return '';
@@ -266,4 +268,4 @@ if (ok(ctx)) {
 	try { apply(true); } catch (e) { say('load ' + (e && e.message ? e.message : e)); }
 	arm();
 }
-$.DcTest = { VERSION: VERSION, TICK_S: TICK_S, act: act, apply: apply, kindOf: kindOf, teamOf: teamOf };
+$.DcTest = { VERSION: VERSION, TICK_S: TICK_S, act: act, apply: apply, kindOf: kindOf, teamOf: teamOf, ownerOf: ownerOf };
