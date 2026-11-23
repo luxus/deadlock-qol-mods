@@ -79,7 +79,7 @@ const showLink = (p, on) => {
 	if (p.hittest !== on) p.hittest = on;
 };
 
-const requestRank = (box, id, gen, state) => {
+const requestRank = (box, id, fp, gen, state, live) => {
 	const bag = plBag();
 	const failed = bag.fails[id];
 	if (failed && nowMs() - failed < FAIL_MS) { showRank(box, 'missing'); state.failed = true; return; }
@@ -104,7 +104,9 @@ const requestRank = (box, id, gen, state) => {
 	img.SetAttributeString('ready', '');
 	const token = gen;
 	$.RegisterEventHandler('ImageLoaded', img, () => {
-		if (token !== state.gen || state.id !== id || !ok(img)) return;
+		if (token !== state.gen || !ok(img)) return;
+		const now = live ? live() : null;
+		if (!now || now.loading || now.conflict || now.id !== id || now.fp !== fp) return;
 		img.SetAttributeString('ready', '1');
 		try { img.style.visibility = 'visible'; } catch (e) { /* no style */ }
 		showRank(box, 'ready');
@@ -133,10 +135,13 @@ const pageMain = () => {
 	const read = () => {
 		const sources = probes.map(textOf);
 		if (ok(self)) textsUnder(self).forEach(t => sources.push(t));
-		const id = agreeIds(sources);
+		const picked = [];
+		sources.forEach(v => { const one = pageId(v); if (one && picked.indexOf(one) < 0) picked.push(one); });
+		const conflict = picked.length > 1;
+		const id = conflict ? '' : (picked[0] || '');
 		const name = treeText(self);
 		const fp = id + '|' + treeText(user) + '|' + treeText(nick) + '|' + (localPlayer() ? '1' : '0');
-		return { id: id, name: name, fp: fp };
+		return { id: id, name: name, fp: fp, loading: has(ctx, 'Loading'), conflict: conflict };
 	};
 	const links = on => { showLink(stat, on); showLink(chaps, on); };
 	const arm = sec => { st.timer = cancel(st.timer); if (ok(ctx)) st.timer = $.Schedule(sec, step); };
@@ -156,7 +161,7 @@ const pageMain = () => {
 		st.holdAt = nowMs();
 		st.watchEnd = st.holdAt + WATCH_MS;
 		links(!!statUrl(row.id));
-		requestRank(rank, row.id, st.gen, st);
+		requestRank(rank, row.id, row.fp, st.gen, st, read);
 		arm(0.2);
 	};
 	function step() {
@@ -242,7 +247,7 @@ const cardMain = () => {
 		st.confirmed = row.fp;
 		st.watchAt = nowMs();
 		links(!!statUrl(row.id));
-		requestRank(rank, row.id, st.gen, st);
+		requestRank(rank, row.id, row.fp, st.gen, st, read);
 		arm(0.016);
 	};
 	function step() {
