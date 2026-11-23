@@ -125,7 +125,6 @@ const pageMain = () => {
 	const stat = ctx.FindChildTraverse('PlStatlocker');
 	const chaps = ctx.FindChildTraverse('PlDeadchaps');
 	const probes = ['PlAccountId', 'PlAccountIdDirect', 'PlFriendCode'].map(id => ctx.FindChildTraverse(id));
-	const friend = ctx.FindChildTraverse('FriendID') || ((ctx.FindChildrenWithClassTraverse && ctx.FindChildrenWithClassTraverse('FriendID')) || [])[0];
 	const self = ctx.FindChildTraverse('SelfName');
 	const user = ctx.FindChildTraverse('UserName');
 	const nick = ctx.FindChildTraverse('UserNickname');
@@ -133,7 +132,6 @@ const pageMain = () => {
 
 	const read = () => {
 		const sources = probes.map(textOf);
-		if (ok(friend)) sources.push(textOf(friend));
 		if (ok(self)) textsUnder(self).forEach(t => sources.push(t));
 		const id = agreeIds(sources);
 		const name = treeText(self);
