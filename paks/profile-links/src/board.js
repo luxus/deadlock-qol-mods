@@ -5,6 +5,8 @@ const ok = p => !!(p && p.IsValid && p.IsValid());
 const has = (p, c) => { try { return ok(p) && p.BHasClass && p.BHasClass(c); } catch (e) { return false; } };
 const textOf = p => { if (!ok(p)) return ''; try { return String(p.text || ''); } catch (e) { return ''; } };
 const attr = (p, key) => { if (!ok(p) || !p.GetAttributeString) return ''; try { return p.GetAttributeString(key, ''); } catch (e) { return ''; } };
+const prop = (p, key) => { if (!ok(p)) return ''; try { const v = p[key]; return v == null ? '' : String(v); } catch (e) { return ''; } };
+const labelText = p => { const t = textOf(p); return t || attr(p, 'text'); };
 const ctx = $.GetContextPanel();
 const openUrl = url => {
 	// SPEC-OPEN O-P7: try the Panorama browser event, then the Steam overlay.
@@ -16,11 +18,14 @@ const chapsUrl = id => 'https://www.deadchaps.gg/player/' + encodeURIComponent(i
 
 const rowId = row => {
 	const name = ok(row) && row.FindChildTraverse ? row.FindChildTraverse('PlayerName') : null;
-	const sources = ['PlAccountId', 'PlAccountIdDirect', 'PlPlayerAccountId', 'PlPlayerAccountIdRoot'].map(id => textOf(ok(row) && row.FindChildTraverse ? row.FindChildTraverse(id) : null));
-	['accountid', 'account_id', 'player_account_id'].forEach(key => {
-		sources.push(attr(name, key));
-		sources.push(attr(row, key));
+	const sources = [];
+	['PlAccountId', 'PlAccountIdDirect', 'PlPlayerAccountId', 'PlPlayerAccountIdRoot'].forEach(id => {
+		sources.push(labelText(ok(row) && row.FindChildTraverse ? row.FindChildTraverse(id) : null));
 	});
+	['accountid', 'account_id', 'player_account_id'].forEach(key => sources.push(attr(name, key)));
+	['accountid', 'account_id', 'player_account_id'].forEach(key => sources.push(prop(name, key)));
+	['account_id', 'accountid', 'player_account_id'].forEach(key => sources.push(attr(row, key)));
+	['accountid', 'account_id', 'player_account_id'].forEach(key => sources.push(prop(row, key)));
 	for (let i = 0; i < sources.length; i++) {
 		const id = boardId(sources[i]);
 		if (id) return id;
