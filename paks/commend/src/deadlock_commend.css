@@ -1,0 +1,69 @@
+/* Commend row. Measured values from the clean-room spec, section 2.
+   Button labels stay English in the layout. SPEC-OPEN O-C7. */
+
+.DcRow {
+	width: fit-children;
+	height: 28px;
+	flow-children: right;
+	horizontal-align: left;
+	vertical-align: bottom;
+	margin-left: 200px;
+	margin-bottom: 16px;
+	z-index: 90; /* SPEC-OPEN O-C5: level 90, 200 px from the left, 16 px from the bottom. */
+	opacity: 1;
+}
+
+.DcBtn {
+	height: 28px;
+	width: fit-children;
+	flow-children: right;
+	padding: 0px 12px 0px 10px;
+	margin-left: 4px;
+	margin-right: 4px;
+	border-radius: 60px;
+	background-color: #FFEFD705;
+	pre-transform-scale2d: 1.0;
+	opacity: 1;
+	transition-property: pre-transform-scale2d, background-color, opacity;
+	transition-duration: 0.1s;
+	transition-timing-function: ease;
+}
+
+.DcBtn:hover {
+	background-color: #FFEFD715;
+	pre-transform-scale2d: 1.08;
+}
+
+.DcBtn:active {
+	pre-transform-scale2d: 0.92;
+	sound: "UI.CommendConfirmation";
+}
+
+.DcIcon {
+	width: 14px;
+	height: 14px;
+	margin-right: 6px;
+	vertical-align: center;
+	background-size: contain;
+	background-repeat: no-repeat;
+	background-position: center;
+	transition-property: wash-color;
+	transition-duration: 0.1s;
+}
+
+.DcText {
+	font-size: 14px;
+	horizontal-align: left;
+	vertical-align: center;
+	transition-property: color;
+	transition-duration: 0.1s;
+}
+
+.DcTeam .DcIcon { wash-color: #8fdf8a; }
+.DcTeam .DcText { color: #8fdf8a; }
+.DcEnemy .DcIcon { wash-color: #e88989; }
+.DcEnemy .DcText { color: #e88989; }
+.DcAll .DcIcon { wash-color: #FFEFD7cc; }
+.DcAll .DcText { color: #FFEFD7cc; }
+.DcReturn .DcIcon { wash-color: #8ee0b0; }
+.DcReturn .DcText { color: #8ee0b0; }
