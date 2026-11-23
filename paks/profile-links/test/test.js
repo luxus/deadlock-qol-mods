@@ -35,6 +35,9 @@ assert($.PlTest.pageId('76561198000000000') === '39734272', 'steam64: ' + $.PlTe
 assert($.PlTest.pageId('{i:account_id}') === '' && $.PlTest.pageId('#Citadel_Profile_FriendID') === '' && $.PlTest.pageId('nan') === '', 'tokens and nan are not ids');
 assert($.PlTest.pageId('99') === '', 'below the minimum');
 assert($.PlTest.pageId('account id: 1,234,567') === '1234567', 'phrase with separators');
+assert($.PlTest.pageId('AccountID: 1’234’567') === '1234567', 'a phrase keeps a curly apostrophe: ' + $.PlTest.pageId('AccountID: 1’234’567'));
+assert($.PlTest.pageId('friend code 76 561 197 960 365 728') === '100000', 'seventeen digits after a phrase are a steam id: ' + $.PlTest.pageId('friend code 76 561 197 960 365 728'));
+assert($.PlTest.pageId('myaccount id 1234567') === '', 'a phrase is a whole word');
 assert($.PlTest.agreeIds(['1111111', '2222222']) === '', 'two ids are a conflict');
 assert($.PlTest.agreeIds(['1111111', 'not an id', '1111111']) === '1111111', 'one distinct id wins');
 assert($.PlTest.boardId('id 3333333') === '3333333', 'scoreboard digits');

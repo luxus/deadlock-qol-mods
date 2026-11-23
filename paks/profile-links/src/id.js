@@ -40,11 +40,13 @@ const pageId = value => {
 	while ((m = re3.exec(text))) { const id = stripZeros(m[1]); push(found, inRange(id) ? id : ''); }
 	const re64 = /(^|\D)(\d{17})(?!\d)/g;
 	while ((m = re64.exec(text))) push(found, fromSteam64(m[2]));
-	if (/account id|friend code/i.test(text)) {
-		const phrase = /(?:account id|friend code)\s*[:#-]?\s*([0-9\s.,'_-]*)$/i.exec(text);
-		if (phrase && /^[0-9\s.,'_-]*$/.test(phrase[1])) {
-			const digits = stripZeros(phrase[1].replace(/\D/g, ''));
-			push(found, inRange(digits) ? digits : '');
+	const phrase = /(?:^|[^a-z0-9])((?:account\s*id|friend\s*code))(?![a-z0-9])/i.exec(text);
+	if (phrase) {
+		const rest = text.slice(phrase.index + phrase[0].length).replace(/’/g, "'").replace(/^[\s:#-]+/, '');
+		if (rest && !/[^0-9\s.,'_-]/.test(rest)) {
+			const digits = stripZeros(rest.replace(/\D/g, ''));
+			if (/^\d{17}$/.test(digits)) push(found, fromSteam64(digits));
+			else push(found, inRange(digits) ? digits : '');
 		}
 		const reShort = /(^|\D)(\d{6,10})(?!\d)/g;
 		while ((m = reShort.exec(text))) { const id = stripZeros(m[2]); push(found, inRange(id) ? id : ''); }
