@@ -147,5 +147,21 @@ assert(C.sched <= 2, 'toggle off: no countdown timer (' + C.sched + ')');
 start({ store: { on: false }, wait: 0.2, hint: { active: true } });
 assert(hiddenOv(), 'stored off: overlay hidden');
 
+// no duplicate script-entry log, keybind digits rejected, and leaving match without hideout resets cooldown
+assert(S.info.filter(m => /ZB-diag script-entry$/.test(m)).length === 1, 'script-entry logged once: ' + S.info.filter(m => /ZB-diag script-entry$/.test(m)).length);
+assert(T().parseSeconds('Press 4') === -1 && T().parseSeconds('[1]') === -1 && T().parseSeconds('Cooldown 45') === 45, 'parseSeconds rejects keybind digits and accepts cooldown phrase');
+{
+	start({ hint: { in_use: true } });
+	assert(state() === 'Active 32s', 'active before leaving match');
+	H.gameplay.DeleteAsync();
+	advance(1);
+	assert(hiddenOv(), 'overlay hidden when gameplay_hud tears down');
+	const gp2 = S.mk('Panel', H.root, 'gameplay_hud');
+	H.gameplay = gp2;
+	advance(1);
+	assert(shownOv() && state() === 'Ready', 'new match after gameplay_hud teardown starts Ready, not stale cooldown: ' + state());
+}
+assert(/const BUILD = 12;/.test(SRC), 'vendored addon-settings build 12');
+
 console.log(passes + ' passed, ' + fails + ' failed');
 process.exit(fails ? 1 : 0);

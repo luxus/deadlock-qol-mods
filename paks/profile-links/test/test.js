@@ -206,5 +206,70 @@ resetCounts();
 advance(2);
 assert(C.sched <= 10, 'scoreboard stops scheduling after 1.2 s: ' + C.sched);
 
+// Regression: boardId handles Steam3 and Steam64 cleanly without prepending "1" from [U:1:...]
+assert($.PlTest.boardId('[U:1:1234567]') === '1234567', 'boardId parses Steam3 cleanly: ' + $.PlTest.boardId('[U:1:1234567]'));
+assert($.PlTest.boardId('76561198000000000') === '39734272', 'boardId converts Steam64: ' + $.PlTest.boardId('76561198000000000'));
+
+// Regression: profile page does not settle or open links while Loading class is active
+{
+	bootPage();
+	H.ctx.AddClass('Loading');
+	load(PAGE);
+	advance(3);
+	assert(pending(H.ctx.FindChildTraverse('PlStatlocker')), 'profile page does not settle while Loading');
+	H.ctx.RemoveClass('Loading');
+	advance(2.6);
+	assert(!pending(H.ctx.FindChildTraverse('PlStatlocker')), 'profile page settles after Loading clears');
+	H.clicks = [];
+	H.ctx.AddClass('Loading');
+	H.ctx.FindChildTraverse('PlStatlocker').events.onactivate();
+	assert(H.clicks.length === 0, 'profile page blocks clicks while Loading is active');
+}
+
+// Multi-layout AddonSettings integration: HUD registrar + profile page + profile card share id deadlock_profile_links.
+// Stored settings must apply to every layout on load, and live toggles must update all open layouts simultaneously.
+{
+	const REG = fs.readFileSync(__dirname + '/../build/pak/panorama/scripts/profile_links_register.js', 'utf8');
+	const SET = fs.readFileSync(__dirname + '/../build/pak/panorama/scripts/profile_links_settings.js', 'utf8');
+	for (const k in S.storage) delete S.storage[k];
+	S.storage.deadlock_profile_links_settings = JSON.stringify({ on: true, statlocker: false, deadchaps: true });
+	H.root = mk('Panel', null, 'UI');
+	H.root.cfg = {};
+	const esc = mk('Panel', H.root, 'EscapeMenu');
+	mk('Panel', mk('Panel', mk('Panel', esc, 'LeftStripe'), 'Menu'), 'SubOptions');
+	const hud = mk('Panel', H.root, 'HudMatchStart');
+	H.ctx = hud;
+	load(REG);
+	advance(1.2);
+	const page = mk('CitadelProfilePage', H.root, 'CitadelProfilePage');
+	H.ctx = page;
+	S.loadExtra(SET);
+	advance(0.2);
+	assert(!page.BHasClass('PlOff') && page.BHasClass('PlNoStatlocker') && !page.BHasClass('PlNoDeadchaps'), 'profile page receives stored statlocker=false on load');
+	const card = mk('CitadelProfileCard', H.root, 'Card');
+	H.ctx = card;
+	S.loadExtra(SET);
+	advance(0.2);
+	assert(!card.BHasClass('PlOff') && card.BHasClass('PlNoStatlocker') && !card.BHasClass('PlNoDeadchaps'), 'profile card receives stored statlocker=false on load');
+	// Open ADDONS and toggle master OFF -> BOTH open page and card update live
+	const addonsBtn = esc.FindChildTraverse('AddonSettingsButton');
+	assert(!!addonsBtn, 'ADDONS button present');
+	addonsBtn.events.onactivate();
+	advance(0.2);
+	const master = esc.FindChildTraverse('PlMaster');
+	assert(!!master, 'Profile Links master toggle present');
+	master.events.onactivate();
+	advance(0.2);
+	assert(page.BHasClass('PlOff') && card.BHasClass('PlOff'), 'toggling master OFF updates both open profile page and profile card live');
+	// Destroy card, toggle master back ON -> page updates and dead card subscriber is pruned
+	const clientPanel = esc.FindChildTraverse('AddonSettingsClient_deadlock_profile_links');
+	const subsBefore = clientPanel.GetChildCount();
+	card.DeleteAsync();
+	master.events.onactivate();
+	advance(0.2);
+	assert(!page.BHasClass('PlOff') && page.BHasClass('PlNoStatlocker'), 'toggling master back ON updates surviving profile page');
+	assert(clientPanel.GetChildCount() === subsBefore - 1, 'destroyed layout subscriber panel is cleaned up');
+}
+
 console.log(passes + ' passed, ' + fails + ' failed');
 process.exit(fails ? 1 : 0);

@@ -14,7 +14,7 @@ The game already has a native `CitadelZiplineBoostIcon` with `{s:cooldown_sec}`,
 
 The script is included from Valve's `hud_movement_speed.xml` (lea `pak01_dir.vpk`, 18 November 2026). The overlay hangs under `#gameplay_hud`, which belongs to `hud.xml`, so it loads its own layout `zipline_boost_overlay.xml` with `BLoadLayout`; that layout's `<styles>` carry `zipline_boost.css` to the overlay. If the load fails, the same panels are built with inline styles, and the console says `ZB-diag overlay layout=loaded` or `layout=inline`. The VPK does **not** override `hud.xml`, so it sits next to HUD++. Hidden (panel `visible = false`, not only a CSS class) while the HUD has `connectedToHideout` or `InHideout`.
 
-A CompLock / ADDONS tab **Zipline Boost** has one toggle, on by default. Settings are `lib/addon-settings/1.2.4`.
+A CompLock / ADDONS tab **Zipline Boost** has one toggle, on by default. Settings are `lib/addon-settings/1.2.5`.
 
 ## Build
 

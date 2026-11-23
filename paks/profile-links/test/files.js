@@ -20,9 +20,9 @@ const settings = read('panorama/scripts/profile_links_settings.js');
 assert(settings.includes("id: 'deadlock_profile_links'"), 'addon id');
 assert(settings.includes("key: 'statlocker'") && settings.includes("key: 'deadchaps'"), 'site toggles');
 assert(settings.includes('needs: [\'on\']') || settings.includes('needs: ["on"]'), 'site toggles need the master switch');
-assert(settings.includes('const BUILD = 9;'), 'addon settings build 9');
-assert(settings.includes('Deadlock Profile Links: 2.0.0 loaded'), 'loaded log line');
-assert(read('panorama/scripts/profile_links_register.js').includes('Deadlock Profile Links: 2.0.0 register hud'), 'hud log line');
+assert(settings.includes('const BUILD = 12;'), 'addon settings build 12');
+assert(settings.includes("const VERSION = '2.0.0';") && settings.includes("'Deadlock Profile Links: ' + VERSION + ' loaded"), 'loaded log line');
+assert(read('panorama/scripts/profile_links_register.js').includes("'Deadlock Profile Links: ' + VERSION + ' register hud'"), 'hud log line');
 assert(read('panorama/scripts/profile_links_register.js').includes('AddonSettings.register(PL_SCHEMA, () => {})'), 'hud registrar callback does nothing');
 assert(!read('panorama/scripts/profile_links_settings.js').includes('plWalk'), 'settings does not walk the ui tree');
 
@@ -57,8 +57,10 @@ assert(css.includes('min-height: 54px;') && css.includes('background-color: #050
 assert(css.includes('.PlRankCard .PlRankBox') && css.includes('width: 48px;') && css.includes('height: 44px;'), 'card rank box fills the 48 by 44 area');
 assert(css.includes('pre-transform-rotate2d: 360deg;') && !css.includes('rotateZ'), 'spinner keyframes use pre-transform-rotate2d');
 assert(css.includes('#69e799') && css.includes('#f0b35a') && css.includes('brightness: 0.72;'), 'card button colours');
+assert(!/\bhittest\s*:/.test(css), 'profile_links.css has no invalid CSS hittest property');
 const scss = read('panorama/styles/profile_links_scoreboard.css');
 assert(scss.includes('width: 34px;') && scss.includes('pre-transform-scale2d: 1.12;') && scss.includes('TotalsRow'), 'scoreboard slot measurements');
+assert(!/\bhittest\s*:/.test(scss), 'scoreboard.css has no invalid CSS hittest property');
 
 assert(fs.statSync(path.join(pak, 'panorama/images/profile_links/statlocker_png.vtex_c')).size > 16000, 'statlocker texture compiled');
 assert(fs.statSync(path.join(pak, 'panorama/images/profile_links/deadchaps_png.vtex_c')).size > 16000, 'deadchaps texture compiled');

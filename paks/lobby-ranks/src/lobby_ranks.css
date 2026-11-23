@@ -17,10 +17,6 @@
 	horizontal-align: right;
 }
 
-.LrBadge.LrHidden {
-	visibility: collapse;
-}
-
 .LrRight {
 	horizontal-align: right;
 	vertical-align: center;

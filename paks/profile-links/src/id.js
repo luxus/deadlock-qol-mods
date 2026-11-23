@@ -1,69 +1,44 @@
 // SPEC-OPEN O-P5: hidden {i:…} bindings are read first. Visible FriendID and AccountID text are the fallback.
-const ACCOUNT_MIN = 100000;
-const ACCOUNT_MAX = 4294967295;
-const STEAM64_BASE = '76561197960265728';
-
-const stripZeros = s => { s = String(s || '').replace(/^0+/, ''); return s || '0'; };
-const cmpDec = (a, b) => {
-	a = stripZeros(a); b = stripZeros(b);
-	if (a.length !== b.length) return a.length > b.length ? 1 : -1;
-	return a === b ? 0 : (a > b ? 1 : -1);
-};
-const subDec = (a, b) => {
-	a = stripZeros(a); b = stripZeros(b);
-	if (cmpDec(a, b) < 0) return '';
-	let out = '', borrow = 0;
-	for (let i = 0; i < a.length; i++) {
-		const ai = a.length - 1 - i, bi = b.length - 1 - i;
-		let d = Number(a.charAt(ai)) - borrow - (bi >= 0 ? Number(b.charAt(bi)) : 0);
-		if (d < 0) { d += 10; borrow = 1; } else borrow = 0;
-		out = String(d) + out;
-	}
-	return stripZeros(out);
-};
-const inRange = id => { if (!/^\d{1,10}$/.test(id)) return false; const n = Number(id); return isFinite(n) && n >= ACCOUNT_MIN && n <= ACCOUNT_MAX; };
-const fromSteam64 = text => { if (!/^\d{17}$/.test(text)) return ''; const id = subDec(text, STEAM64_BASE); return inRange(id) ? id : ''; };
-const tidy = value => String(value == null ? '' : value).replace(/<[^>]*>/g, ' ').replace(/\s+/g, ' ').replace(/^\s+|\s+$/g, '');
-const push = (found, id) => { if (id && found.indexOf(id) < 0) found.push(id); };
-
 // One profile or card source. Empty, a token, or more than one candidate is no id.
 const pageId = value => {
 	const text = tidy(value);
 	if (!text || /[{}]/.test(text) || text.charAt(0) === '#' || /^nan$/i.test(text)) return '';
-	const whole3 = /^\[U:1:(\d+)\]$/i.exec(text);
-	if (whole3) { const id = stripZeros(whole3[1]); return inRange(id) ? id : ''; }
-	if (/^\d{17}$/.test(text)) return fromSteam64(text);
-	if (/^\d{1,10}$/.test(text)) { const id = stripZeros(text); return inRange(id) ? id : ''; }
+	const exact = parseExactAccount(text);
+	if (exact !== null) return exact;
 	const found = [];
-	let m;
-	const re3 = /\[U:1:(\d+)\]/gi;
-	while ((m = re3.exec(text))) { const id = stripZeros(m[1]); push(found, inRange(id) ? id : ''); }
-	const re64 = /(^|\D)(\d{17})(?!\d)/g;
-	while ((m = re64.exec(text))) push(found, fromSteam64(m[2]));
+	scanSteamTokens(text, found);
 	const phrase = /(?:^|[^a-z0-9])((?:account\s*id|friend\s*code))(?![a-z0-9])/i.exec(text);
 	if (phrase) {
 		const rest = text.slice(phrase.index + phrase[0].length).replace(/’/g, "'").replace(/^[\s:#-]+/, '');
 		if (rest && !/[^0-9\s.,'_-]/.test(rest)) {
 			const digits = stripZeros(rest.replace(/\D/g, ''));
-			if (/^\d{17}$/.test(digits)) push(found, fromSteam64(digits));
-			else push(found, inRange(digits) ? digits : '');
+			if (/^\d{17}$/.test(digits)) pushUnique(found, fromSteam64(digits));
+			else pushUnique(found, inRange(digits) ? digits : '');
 		}
+		let m;
 		const reShort = /(^|\D)(\d{6,10})(?!\d)/g;
-		while ((m = reShort.exec(text))) { const id = stripZeros(m[2]); push(found, inRange(id) ? id : ''); }
+		while ((m = reShort.exec(text))) { const id = stripZeros(m[2]); pushUnique(found, inRange(id) ? id : ''); }
 	}
 	return found.length === 1 ? found[0] : '';
 };
 
 // Several sources. One distinct id wins. Two different ids are a conflict.
-const agreeIds = list => {
+const resolveIds = list => {
 	const ids = [];
-	(list || []).forEach(v => push(ids, pageId(v)));
-	return ids.length === 1 ? ids[0] : '';
+	(list || []).forEach(v => pushUnique(ids, pageId(v)));
+	const conflict = ids.length > 1;
+	return { id: conflict ? '' : (ids[0] || ''), conflict: conflict };
 };
+const agreeIds = list => resolveIds(list).id;
 
-// Scoreboard source. First valid 6 to 10 digit run wins. The caller walks sources in order.
+// Scoreboard source. Valid Steam3/Steam64/plain id wins; otherwise a clean 6-10 digit run.
 const boardId = value => {
-	const text = tidy(value).replace(/\D/g, '');
+	const raw = tidy(value);
+	if (!raw || /[{}]/.test(raw) || raw.charAt(0) === '#') return '';
+	const parsed = pageId(raw);
+	if (parsed) return parsed;
+	if (/\[U:/i.test(raw)) return '';
+	const text = raw.replace(/\D/g, '');
 	if (!/^\d{6,10}$/.test(text)) return '';
 	const id = stripZeros(text);
 	return inRange(id) ? id : '';

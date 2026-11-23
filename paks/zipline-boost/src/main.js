@@ -1,4 +1,3 @@
-try { $.Msg('ZB-diag script-entry'); } catch (e0) { /* no console */ }
 const VERSION = '0.1.0';
 const BOOST_DEFAULT = true;
 const TICK_IDLE_S = 1;
@@ -58,13 +57,6 @@ const word = (token, args) => (args || []).reduce((t, a, i) => t.split('{' + i +
 const clockMs = () => { try { if (typeof $.ZbClock === 'function') return $.ZbClock(); } catch (e) { /* tests only */ } return Date.now(); };
 
 const hasClass = (p, name) => { try { return ok(p) && p.BHasClass && p.BHasClass(name); } catch (e) { return false; } };
-const visible = p => {
-	if (!ok(p)) return false;
-	try { if (p.IsVisible && !p.IsVisible()) return false; } catch (e) { /* no method */ }
-	try { if (p.visible === false) return false; } catch (e2) { /* missing */ }
-	try { if (p.style && p.style.visibility === 'collapse') return false; } catch (e3) { /* missing */ }
-	return true;
-};
 const readText = p => { if (!ok(p)) return ''; try { return String(p.text || ''); } catch (e) { return ''; } };
 
 const parseSeconds = value => {
@@ -72,7 +64,7 @@ const parseSeconds = value => {
 	if (!text) return -1;
 	const clean = text.replace(/<[^>]*>/g, ' ').replace(/&nbsp;/g, ' ').replace(/\s+/g, ' ').replace(/^\s+|\s+$/g, '');
 	if (!clean || /[{}#]/.test(clean)) return -1;
-	let m = /Countdown[^>]*>\s*(\d+(?:\.\d+)?)/i.exec(text) || /Countdown[^>]*>\s*(\d+(?:\.\d+)?)/i.exec(clean);
+	let m = /Countdown[^>]*>\s*(\d+(?:\.\d+)?)/i.exec(text);
 	if (m) { const n = Number(m[1]); return isFinite(n) && n >= 0 ? n : -1; }
 	m = /\b(\d{1,2}):(\d{2})\b/.exec(clean);
 	if (m) { const n = Number(m[1]) * 60 + Number(m[2]); return isFinite(n) && n >= 0 ? n : -1; }
@@ -80,7 +72,7 @@ const parseSeconds = value => {
 	if (m) { const n = Number(m[1]); return isFinite(n) && n >= 0 ? n : -1; }
 	m = /^(\d+(?:\.\d+)?)$/.exec(clean);
 	if (m) { const n = Number(m[1]); return isFinite(n) && n >= 0 && n <= COOLDOWN_MS / 1000 + 5 ? n : -1; }
-	m = /\b(\d{1,4})\b/.exec(clean);
+	m = /\b(?:cooldown|cd|abklingzeit|wait|ready\s+in)[^0-9]*(\d{1,4})\b/i.exec(clean);
 	if (m) { const n = Number(m[1]); return isFinite(n) && n >= 0 && n <= COOLDOWN_MS / 1000 + 5 ? n : -1; }
 	return -1;
 };
@@ -96,8 +88,8 @@ const formatClock = secs => {
 const top = () => { let a = $.GetContextPanel(), last = a; while (ok(a)) { last = a; a = a.GetParent(); } return last; };
 const st = () => {
 	const r = top();
-	if (!ok(r)) return { timer: null, host: null, root: null, wasActive: false, activeEnd: 0, cooldownEnd: 0 };
-	if (!r.Zb) r.Zb = { timer: null, host: null, root: null, wasActive: false, activeEnd: 0, cooldownEnd: 0 };
+	if (!ok(r)) return { timer: null, host: null, root: null, title: null, state: null, wasActive: false, activeEnd: 0, cooldownEnd: 0 };
+	if (!r.Zb) r.Zb = { timer: null, host: null, root: null, title: null, state: null, wasActive: false, activeEnd: 0, cooldownEnd: 0 };
 	return r.Zb;
 };
 
@@ -113,8 +105,8 @@ const findHint = hints => {
 	const ids = [HINT_PREFIX, HINT_ID];
 	for (let i = 0; i < ids.length; i++) { const p = byId(hints, ids[i]); if (p) return p; }
 	const queue = kidsOf(hints);
-	for (let seen = 0; queue.length && seen < 400; seen++) {
-		const p = queue.shift();
+	for (let head = 0; head < queue.length && head < 400; head++) {
+		const p = queue[head];
 		if (hasClass(p, HINT_CLASS)) return p;
 		kidsOf(p).forEach(k => queue.push(k));
 	}
@@ -150,7 +142,7 @@ const hintSeconds = hint => {
 	if (!ok(hint)) return -1;
 	const fromLabel = secondsFrom(hint, ['context_label', 'cooldown_timer']);
 	if (fromLabel >= 0) return fromLabel;
-	const notice = hint.FindChildTraverse && hint.FindChildrenWithClassTraverse
+	const notice = hint.FindChildrenWithClassTraverse
 		? (hint.FindChildrenWithClassTraverse('cooldownNotice') || [])
 		: [];
 	for (let i = 0; i < notice.length; i++) {
@@ -174,7 +166,7 @@ const readState = (s, now) => {
 	diagChange('hint', panelId(hint), 'lookup hint citadel_ability_zipline_boost=' + (ok(hint) ? 'found ' + panelId(hint) : 'not found'));
 	diagChange('buff', panelId(buff), 'lookup buff status_citadel_ability_zipline_boost=' + (ok(buff) ? 'found' : 'not found'));
 	diagChange('hideout', String(hidden), 'hideout=' + hidden);
-	if (!ok(gp)) return { kind: 'hidden', seconds: -1, host: gp };
+	if (!ok(gp)) { s.wasActive = false; s.activeEnd = 0; s.cooldownEnd = 0; return { kind: 'hidden', seconds: -1, host: gp }; }
 	if (hidden) { s.wasActive = false; s.activeEnd = 0; s.cooldownEnd = 0; return { kind: 'hidden', seconds: -1, host: gp }; }
 	const buttonReady = hasClass(hint, 'active');
 	const inUse = ok(buff) || hasClass(hint, 'in_use');
@@ -218,7 +210,7 @@ const ensureOverlay = host => {
 	const s = st();
 	if (!ok(host)) return null;
 	if (ok(s.root) && s.root.GetParent && s.root.GetParent() === host) return s.root;
-	if (ok(s.root)) { try { s.root.DeleteAsync(0); } catch (e) { /* gone */ } s.root = null; }
+	if (ok(s.root)) { try { s.root.DeleteAsync(0); } catch (e) { /* gone */ } s.root = null; s.title = null; s.state = null; }
 	const root = $.CreatePanel('Panel', host, ROOT_ID);
 	root.hittest = false;
 	s.inline = !(loadLayout(root) && ok(root.FindChildTraverse(TITLE_ID)) && ok(root.FindChildTraverse(STATE_ID)));
@@ -228,8 +220,11 @@ const ensureOverlay = host => {
 		paint(root, INLINE.root);
 		child(root, 'Panel', ICON_ID, INLINE.icon);
 		const text = child(root, 'Panel', TEXT_ID, INLINE.text);
-		child(text, 'Label', TITLE_ID, INLINE.title);
-		child(text, 'Label', STATE_ID, INLINE.state);
+		s.title = child(text, 'Label', TITLE_ID, INLINE.title);
+		s.state = child(text, 'Label', STATE_ID, INLINE.state);
+	} else {
+		s.title = root.FindChildTraverse(TITLE_ID);
+		s.state = root.FindChildTraverse(STATE_ID);
 	}
 	s.root = root;
 	s.host = host;
@@ -257,8 +252,8 @@ const setOverlay = (s, model) => {
 	root.SetHasClass('ZbReady', model.kind === 'ready');
 	root.SetHasClass('ZbActive', model.kind === 'active');
 	root.SetHasClass('ZbCooldown', model.kind === 'cooldown');
-	const title = root.FindChild(TITLE_ID) || root.FindChildTraverse(TITLE_ID);
-	const state = root.FindChild(STATE_ID) || root.FindChildTraverse(STATE_ID);
+	const title = ok(s.title) ? s.title : (s.title = root.FindChild(TITLE_ID) || root.FindChildTraverse(TITLE_ID));
+	const state = ok(s.state) ? s.state : (s.state = root.FindChild(STATE_ID) || root.FindChildTraverse(STATE_ID));
 	const titleText = word('Zb_Title');
 	if (ok(title) && title.text !== titleText) title.text = titleText;
 	let body = '';

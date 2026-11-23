@@ -133,5 +133,38 @@ H.ctx.AddClass('SelectedScreen_Graphs');
 $.DcApply();
 assert(!shown(H.ctx.FindChildTraverse('DcRow_Team1')), 'graphs shows no row');
 
+// Multi-layout AddonSettings integration: HUD registrar + post-game settings share id deadlock_commend.
+// Stored off must sync to post-game, and toggling back ON in ADDONS must re-enable buttons immediately.
+{
+	const REG = fs.readFileSync(__dirname + '/../build/pak/panorama/scripts/deadlock_commend_register.js', 'utf8');
+	const SET = fs.readFileSync(__dirname + '/../build/pak/panorama/scripts/deadlock_commend_settings.js', 'utf8');
+	for (const k in S.storage) delete S.storage[k];
+	S.storage.deadlock_commend_settings = JSON.stringify({ on: false });
+	const { post } = world('Team1');
+	const esc = mk('Panel', H.root, 'EscapeMenu');
+	mk('Panel', mk('Panel', mk('Panel', esc, 'LeftStripe'), 'Menu'), 'SubOptions');
+	const hud = mk('Panel', H.root, 'HudJoinTeam');
+	H.ctx = hud;
+	load(REG);
+	advance(1.2);
+	assert(H.root.cfg.DcCommend && H.root.cfg.DcCommend.on === false, 'HUD registrar receives stored off');
+	H.ctx = post;
+	S.loadExtra(SRC);
+	S.loadExtra(SET);
+	advance(0.5);
+	assert(!shown(post.FindChildTraverse('DcRow_Team1')), 'post-game respects stored off on load');
+	// Open ADDONS and toggle Commend back ON
+	const addonsBtn = esc.FindChildTraverse('AddonSettingsButton');
+	assert(!!addonsBtn, 'ADDONS button present');
+	addonsBtn.events.onactivate();
+	advance(0.2);
+	const master = esc.FindChildTraverse('DcMaster');
+	assert(!!master, 'Commend master toggle present');
+	master.events.onactivate();
+	advance(0.2);
+	assert(H.root.cfg.DcCommend.on === true, 'toggling Commend back ON updates shared bag');
+	assert(shown(post.FindChildTraverse('DcRow_Team1')) && shown(post.FindChildTraverse('DcTeam_Team1')), 'toggling Commend back ON shows row and buttons live');
+}
+
 console.log(passes + ' passed, ' + fails + ' failed');
 process.exit(fails ? 1 : 0);

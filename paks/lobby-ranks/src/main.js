@@ -10,10 +10,6 @@ const DISMISS_S = 0.5;
 const PARTY_COLORS = 6;
 const RANKS_DEFAULT = true;
 const TICK_S = 1;
-const CACHE_MS = 600000;
-const ACCOUNT_MIN = 100000;
-const ACCOUNT_MAX = 4294967295;
-const STEAM64_BASE = '76561197960265728';
 const API_BASE = 'https://api.deadlock-api.com/v1/players';
 const BADGE_ID = 'LrBadge';
 
@@ -30,55 +26,17 @@ const panelId = p => {
 	try { typ = String(p.paneltype || ''); } catch (e2) { /* */ }
 	return (typ || 'Panel') + '#' + (id || '?');
 };
-const visOf = p => {
-	if (!ok(p)) return 'missing';
-	const parts = [];
-	try { if (p.style && p.style.visibility) parts.push('visibility=' + p.style.visibility); } catch (e) { /* */ }
-	try { if (p.style && p.style.opacity !== undefined && p.style.opacity !== '' && p.style.opacity !== null) parts.push('opacity=' + p.style.opacity); } catch (e2) { /* */ }
-	try { if (p.IsVisible) parts.push('IsVisible=' + p.IsVisible()); } catch (e3) { /* */ }
-	try { if (p.visible !== undefined) parts.push('visible=' + p.visible); } catch (e4) { /* */ }
-	return parts.join(',') || 'present';
-};
 const cancel = h => { if (h) { try { $.CancelScheduled(h); } catch (e) { /* ran */ } } return null; };
 const show = (p, on) => { const v = on ? 'visible' : 'collapse'; if (!ok(p) || p.style.visibility === v) return; p.style.visibility = v; };
 const guard = (name, fn) => { try { return fn(); } catch (e) { say(name + ' failed: ' + (e && e.message ? e.message : e)); return undefined; } };
 
-const stripZeros = s => { s = String(s || '').replace(/^0+/, ''); return s || '0'; };
-const cmpDec = (a, b) => { a = stripZeros(a); b = stripZeros(b); if (a.length !== b.length) return a.length > b.length ? 1 : -1; return a === b ? 0 : (a > b ? 1 : -1); };
-const subDec = (a, b) => {
-	a = stripZeros(a); b = stripZeros(b);
-	if (cmpDec(a, b) < 0) return '';
-	let out = '', borrow = 0;
-	for (let i = 0; i < a.length; i++) {
-		const ai = a.length - 1 - i, bi = b.length - 1 - i;
-		let d = Number(a.charAt(ai)) - borrow - (bi >= 0 ? Number(b.charAt(bi)) : 0);
-		if (d < 0) { d += 10; borrow = 1; } else borrow = 0;
-		out = String(d) + out;
-	}
-	return stripZeros(out);
-};
-const inRange = id => { if (!/^\d{1,10}$/.test(id)) return false; const n = Number(id); return isFinite(n) && n >= ACCOUNT_MIN && n <= ACCOUNT_MAX; };
-const fromSteam64 = text => {
-	const t = String(text || '');
-	if (!/^\d{17}$/.test(t)) return '';
-	const id = subDec(t, STEAM64_BASE);
-	return inRange(id) ? id : '';
-};
-const tidy = value => String(value === undefined || value === null ? '' : value).replace(/<[^>]*>/g, ' ').replace(/\s+/g, ' ').replace(/^\s+|\s+$/g, '');
 const parseAccount = value => {
 	const text = tidy(value);
 	if (!text || /[{}]/.test(text) || text.charAt(0) === '#' || /^nan$/i.test(text)) return '';
-	const steam3 = /^\[U:1:(\d+)\]$/i.exec(text);
-	if (steam3) { const id = stripZeros(steam3[1]); return inRange(id) ? id : ''; }
-	if (/^\d{17}$/.test(text)) return fromSteam64(text);
-	if (/^\d{1,10}$/.test(text)) { const id = stripZeros(text); return inRange(id) ? id : ''; }
+	const exact = parseExactAccount(text);
+	if (exact !== null) return exact;
 	const found = [];
-	const add = v => { if (v && found.indexOf(v) < 0) found.push(v); };
-	const re3 = /\[U:1:(\d+)\]/gi;
-	let m;
-	while ((m = re3.exec(text))) { const id = stripZeros(m[1]); add(inRange(id) ? id : ''); }
-	const re64 = /(^|\D)(\d{17})(?!\d)/g;
-	while ((m = re64.exec(text))) add(fromSteam64(m[2]));
+	scanSteamTokens(text, found);
 	return found.length === 1 ? found[0] : '';
 };
 const agree = (hidden, visible) => {
@@ -91,13 +49,11 @@ const rankUrl = id => { const a = parseAccount(id); return a ? API_BASE + '/' + 
 const top = () => { let a = $.GetContextPanel(), last = a; while (ok(a)) { last = a; a = a.GetParent(); } return last; };
 const st = () => {
 	const r = top();
-	if (!ok(r)) return { timer: null, list: null, cache: {} };
-	if (!r.Lr) r.Lr = { timer: null, list: null, cache: {}, roster: null, probe: null, party: null };
+	if (!ok(r)) return { timer: null, list: null };
+	if (!r.Lr) r.Lr = { timer: null, list: null, roster: null, probe: null, party: null, dismiss: null };
 	return r.Lr;
 };
-const nowMs = () => Date.now();
 const readText = p => { if (!ok(p)) return ''; try { return String(p.text || ''); } catch (e) { return ''; } };
-const probe = (root, key, id) => { if (ok(root[key])) return root[key]; const p = root.FindChildTraverse(id); if (ok(p)) root[key] = p; return p; };
 
 // ---------- where we are: Esc menu open, not in the Hideout (same gate as the reference) ----------
 const ancestor = test => { for (let p = $.GetContextPanel(), n = 0; ok(p) && n < 64; p = p.GetParent(), n++) { if (test(p)) return p; } return null; };
@@ -149,9 +105,9 @@ const findCards = () => {
 	const r = top();
 	if (!ok(r)) return out;
 	const queue = [r];
-	let seen = 0;
-	while (queue.length && seen < 8000) {
-		const p = queue.shift(); seen++;
+	let head = 0;
+	while (head < queue.length && head < 8000) {
+		const p = queue[head++];
 		let t = '';
 		try { t = String(p.paneltype || ''); } catch (e) { /* */ }
 		if (t === CARD_TYPE) { out.push(p); continue; }
@@ -229,6 +185,7 @@ const probeNext = s => {
 	const done = (acc, card) => {
 		s.probe = null;
 		s.probed = true;
+		if (!ok(row) || rowKey(row) !== pr.key) { acc = { id: '', via: 'hero changed', text: '' }; card = 'stale'; }
 		if (s.roster && s.roster.sig === pr.sig && acc.id) { s.roster.ids[pr.key] = acc.id; s.roster.via[pr.key] = acc.via; }
 		diag('probe row=' + pr.key + ' try=' + R.tries[pr.key] + ' card=' + card + ' via=' + acc.via + ' text="' + String(acc.text || '').slice(0, 60) + '" id=' + (acc.id || 'none'));
 		guard('sync', () => syncList(s));
@@ -246,7 +203,6 @@ const probeNext = s => {
 		done(cards.length ? cardAccount(cards[cards.length - 1]) : { id: '', via: 'none', text: '' }, cards.length ? 'noid' : 'none');
 	};
 	const target = hostFor(row);
-	if (rowKey(row) !== key) { done({ id: '', via: 'hero changed', text: '' }, 'none'); return; }
 	if (!ok(target)) { done({ id: '', via: 'no MainContents', text: '' }, 'none'); return; }
 	try { $.DispatchEvent('Activated', target, 'mouse'); } catch (e) { diag('probe activate failed ' + (e && e.message ? e.message : e)); }
 	pr.timer = $.Schedule(PROBE_DELAYS[0], check);
@@ -296,7 +252,7 @@ const partyRequest = (s, rows) => {
 	const teams = [[], []];
 	rows.forEach(r => { const id = s.roster.ids[rowKey(r)]; if (id) teams[r._lrTeam ? 1 : 0].push(id); });
 	if (teams[0].length + teams[1].length < 2) return;
-	const want = teams[0].join(',') + '|' + teams[1].join(',');
+	const want = teams[0].slice().sort().join(',') + '|' + teams[1].slice().sort().join(',');
 	const pp = partyPanel(s);
 	if (pp.dead || pp.want === want) return;
 	pp.want = want; pp.groups = null; pp.seq++;
@@ -353,7 +309,7 @@ const ensureBadge = (row, id, s) => {
 	if (badge.GetAttributeString('rankurl', '') !== url) {
 		badge.SetAttributeString('account', id);
 		badge.SetAttributeString('rankurl', url);
-		try { badge.SetImage(url); s.cache[id] = { url: url, at: nowMs() }; diag('image set src=' + url + ' row=' + rowKey(row)); } catch (e2) { diag('image set failed ' + (e2 && e2.message ? e2.message : e2)); show(badge, false); return; }
+		try { badge.SetImage(url); diag('image set src=' + url + ' row=' + rowKey(row)); } catch (e2) { diag('image set failed ' + (e2 && e2.message ? e2.message : e2)); show(badge, false); return; }
 	}
 	show(badge, true);
 	drawParty(box, id, s);
@@ -408,6 +364,10 @@ const kick = () => { const s = st(); s.timer = cancel(s.timer); tick(); };
 const stop = () => {
 	const s = st();
 	s.timer = cancel(s.timer);
+	s.dismiss = cancel(s.dismiss);
+	if (s.probe) { s.probe.timer = cancel(s.probe.timer); s.probe = null; }
+	s.probed = false;
+	if (s.party) s.party.timer = cancel(s.party.timer);
 	if (ok(s.list)) entries(s.list).forEach(hideRow);
 };
 const attach = () => {
@@ -416,7 +376,7 @@ const attach = () => {
 	st().list = ctx;
 	diag('attach list=' + panelId(ctx));
 };
-const settingsChanged = () => { if (wanted()) { attach(); const s = st(); if (s.party) s.party.want = ''; kick(); } else stop(); };
+const settingsChanged = () => { if (wanted()) { attach(); const s = st(); if (s.party && cfg.duo && !s.party.groups) s.party.want = ''; kick(); } else stop(); };
 
 const SCHEMA = {
 	id: 'deadlock_lobby_ranks', title: '#Lr_Tab', prefix: 'Lr', strings: STRINGS,

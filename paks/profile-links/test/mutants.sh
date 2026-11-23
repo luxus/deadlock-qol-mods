@@ -18,8 +18,8 @@ for a,b in zip(args[::2], args[1::2]):
 open('/tmp/pl_mutant.js','w').write(s)
 " "$@" || { echo "BROKEN $name"; fail=1; return; }
 	page=/tmp/pl_mutant.js
-	board='$B'
-	if [ "$file" = "$B" ]; then page='$P'; board=/tmp/pl_mutant.js; fi
+	board="$B"
+	if [ "$file" = "$B" ]; then page="$P"; board=/tmp/pl_mutant.js; fi
 	if node test/test.js "$page" "$board" >/tmp/pl_mutant.out 2>&1; then
 		echo "SURVIVED $name"
 		fail=1

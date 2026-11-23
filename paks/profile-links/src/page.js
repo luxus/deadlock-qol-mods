@@ -7,9 +7,6 @@ const CARD_SLOW_MS = 1500;
 const CARD_GIVEUP_MS = 5000;
 const WATCH_MS = 8000;
 
-const ok = p => !!(p && p.IsValid && p.IsValid());
-const has = (p, c) => { try { return ok(p) && p.BHasClass && p.BHasClass(c); } catch (e) { return false; } };
-const textOf = p => { if (!ok(p)) return ''; try { return String(p.text || ''); } catch (e) { return ''; } };
 // SG-P1: CitadelUserName has no text of its own. Join the subtree, parent before children, 8 levels.
 const treeText = root => {
 	const parts = [];
@@ -28,13 +25,6 @@ const nowMs = () => { try { if (typeof $.PlClock === 'function') return $.PlCloc
 const cancel = h => { if (h) { try { $.CancelScheduled(h); } catch (e) { /* ran */ } } return null; };
 const ctx = $.GetContextPanel();
 
-const openUrl = url => {
-	// SPEC-OPEN O-P7: try the Panorama browser event, then the Steam overlay.
-	try { $.DispatchEvent('ExternalBrowserGoToURL', url); return; } catch (e) { /* overlay next */ }
-	try { if (typeof SteamOverlayAPI !== 'undefined' && SteamOverlayAPI.OpenURL) SteamOverlayAPI.OpenURL(url); } catch (e2) { /* nowhere to open */ }
-};
-const statUrl = id => id ? 'https://statlocker.gg/profile/' + encodeURIComponent(id) : '';
-const chapsUrl = id => id ? 'https://www.deadchaps.gg/player/' + encodeURIComponent(id) + '/' : '';
 const rankUrl = id => id ? 'https://api.deadlock-api.com/v1/players/' + encodeURIComponent(id) + '/rank/image?format=webp' : '';
 
 const textsUnder = root => {
@@ -48,7 +38,7 @@ const textsUnder = root => {
 		const t = textOf(p);
 		if (t) out.push(t);
 		const c = p.GetChildCount ? p.GetChildCount() : 0;
-		for (let i = 0; i < c; i++) stack.push(p.GetChild(i));
+		for (let i = c - 1; i >= 0; i--) stack.push(p.GetChild(i));
 	}
 	return out;
 };
@@ -119,7 +109,7 @@ const requestRank = (box, id, fp, gen, state, live) => {
 		showRank(box, 'missing');
 		try { img.DeleteAsync(0); } catch (e) { /* already gone */ }
 	});
-	try { img.SetImage(url); } catch (e4) { bag.fails[id] = nowMs(); showRank(box, 'missing'); state.failed = true; }
+	try { img.SetImage(url); } catch (e4) { bag.fails[id] = nowMs(); showRank(box, 'missing'); state.failed = true; try { img.DeleteAsync(0); } catch (e5) { /* already gone */ } }
 };
 
 const pageMain = () => {
@@ -135,13 +125,10 @@ const pageMain = () => {
 	const read = () => {
 		const sources = probes.map(textOf);
 		if (ok(self)) textsUnder(self).forEach(t => sources.push(t));
-		const picked = [];
-		sources.forEach(v => { const one = pageId(v); if (one && picked.indexOf(one) < 0) picked.push(one); });
-		const conflict = picked.length > 1;
-		const id = conflict ? '' : (picked[0] || '');
+		const res = resolveIds(sources);
 		const name = treeText(self);
-		const fp = id + '|' + treeText(user) + '|' + treeText(nick) + '|' + (localPlayer() ? '1' : '0');
-		return { id: id, name: name, fp: fp, loading: has(ctx, 'Loading'), conflict: conflict };
+		const fp = res.id + '|' + treeText(user) + '|' + treeText(nick) + '|' + (localPlayer() ? '1' : '0');
+		return { id: res.id, name: name, fp: fp, loading: has(ctx, 'Loading'), conflict: res.conflict };
 	};
 	const links = on => { showLink(stat, on); showLink(chaps, on); };
 	const arm = sec => { st.timer = cancel(st.timer); if (ok(ctx)) st.timer = $.Schedule(sec, step); };
@@ -170,25 +157,25 @@ const pageMain = () => {
 		const row = read();
 		const t = nowMs();
 		if (st.phase === 'hold') {
-			if (row.id !== st.id) { restart(); return; }
+			if (row.loading || row.id !== st.id) { restart(); return; }
 			if (t < st.watchEnd) arm(t - st.holdAt < 2500 ? 0.2 : 0.5);
 			return;
 		}
-		if (row.id && st.prev && st.prev.id === row.id && st.prev.name === row.name) {
+		if (!row.loading && row.id && st.prev && st.prev.id === row.id && st.prev.name === row.name) {
 			if (!st.since) st.since = t;
 			if (t - st.since >= PAGE_LOCK_MS) settle(row);
 			else arm(0.5);
 			return;
 		}
-		st.prev = row.id ? row : null;
-		st.since = row.id ? t : 0;
+		st.prev = !row.loading && row.id ? row : null;
+		st.since = !row.loading && row.id ? t : 0;
 		links(false);
 		showRank(rank, 'loading');
 		arm(0.5);
 	}
 	const press = which => {
 		const row = read();
-		if (st.phase !== 'hold' || !row.id || row.id !== st.id || row.fp !== st.fp) return;
+		if (st.phase !== 'hold' || row.loading || row.conflict || !row.id || row.id !== st.id || row.fp !== st.fp) return;
 		const url = which === 'chaps' ? chapsUrl(row.id) : statUrl(row.id);
 		if (url) openUrl(url);
 	};
@@ -211,16 +198,13 @@ const cardMain = () => {
 	const st = { phase: 'seek', prev: null, since: 0, started: nowMs(), watchAt: 0, seenLoad: has(ctx, 'Loading'), confirmed: '', id: '', timer: null, gen: 0, seeking: true, failed: false };
 
 	const read = () => {
-		const picked = [];
-		[textOf(probe), textOf(account)].forEach(v => { const one = pageId(v); if (one && picked.indexOf(one) < 0) picked.push(one); });
-		const conflict = picked.length > 1;
-		const id = conflict ? '' : (picked[0] || '');
+		const res = resolveIds([textOf(probe), textOf(account)]);
 		const name = treeText(user);
 		const status = treeText(rich);
 		const local = localPlayer();
 		const loading = has(ctx, 'Loading');
-		const fp = id + '|' + name + '|' + treeText(nick) + '|' + (local ? '1' : '0');
-		return { id: id, name: name, status: status, local: local, loading: loading, conflict: conflict, fp: fp };
+		const fp = res.id + '|' + name + '|' + treeText(nick) + '|' + (local ? '1' : '0');
+		return { id: res.id, name: name, status: status, local: local, loading: loading, conflict: res.conflict, fp: fp };
 	};
 	const links = on => {
 		const show = on && inMenu();

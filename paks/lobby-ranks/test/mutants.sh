@@ -11,7 +11,7 @@ open('/tmp/lr_mutant.js','w').write(s)" "$@" || { echo "BROKEN $name"; return; }
 
 run default-off "const RANKS_DEFAULT = true;" "const RANKS_DEFAULT = false;"
 run tick-every-frame "const TICK_S = 1;" "const TICK_S = 0.016;"
-run runs-when-off "const settingsChanged = () => { if (wanted()) { attach(); const s = st(); if (s.party) s.party.want = ''; kick(); } else stop(); };" "const settingsChanged = () => { attach(); kick(); };" "	if (!wanted()) { if (ok(s.list)) entries(s.list).forEach(hideRow); AddonSettings.pulse(); return; }" "	if (!wanted()) { if (ok(s.list)) entries(s.list).forEach(hideRow); AddonSettings.pulse(); s.timer = \$.Schedule(TICK_S, tick); return; }"
+run runs-when-off "const settingsChanged = () => { if (wanted()) { attach(); const s = st(); if (s.party && cfg.duo && !s.party.groups) s.party.want = ''; kick(); } else stop(); };" "const settingsChanged = () => { attach(); kick(); };" "	if (!wanted()) { if (ok(s.list)) entries(s.list).forEach(hideRow); AddonSettings.pulse(); return; }" "	if (!wanted()) { if (ok(s.list)) entries(s.list).forEach(hideRow); AddonSettings.pulse(); s.timer = \$.Schedule(TICK_S, tick); return; }"
 run write-every-tick "const show = (p, on) => { const v = on ? 'visible' : 'collapse'; if (!ok(p) || p.style.visibility === v) return; p.style.visibility = v; };" "const show = (p, on) => { if (ok(p)) p.style.visibility = on ? 'visible' : 'collapse'; };" "	if (badge.GetAttributeString('rankurl', '') !== url) {" "	if (true) {"
 run no-dismiss "if (!s.probe) { dismissMenus();" "if (!s.probe) {"
 run dismiss-every-probe "		s.probe = null;

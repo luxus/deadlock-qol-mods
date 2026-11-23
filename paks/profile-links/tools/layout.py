@@ -58,7 +58,6 @@ def style_and_script(src, style, script):
 
 
 def rank_block(kind):
-	spin = '24' if kind == 'page' else '20'
 	return (
 		'<Panel id="PlRank" class="PlRank PlRank%s PlLoading">' % ('Page' if kind == 'page' else 'Card')
 		+ '<Panel class="PlRankBox">'
@@ -68,7 +67,7 @@ def rank_block(kind):
 		+ '<Image class="PlSpinner" src="s2r://panorama/images/control_icons/spinner_png.vtex" scaling="contain" />'
 		+ '<Panel id="PlRankImage" class="PlImageBox" />'
 		+ '</Panel></Panel>'
-	).replace('24px', spin)
+	)
 
 
 def logo_button(site, tip, extra):
