@@ -87,6 +87,19 @@ assert(pending(H.ctx.FindChildTraverse('PlStatlocker')), 'local card is not read
 advance(0.4);
 assert(!pending(H.ctx.FindChildTraverse('PlStatlocker')), 'local card is ready before 1 s');
 
+bootCard(true, true);
+H.ctx.FindChildTraverse('PlAccountId')._text = '';
+H.ctx.FindChildTraverse('AccountID')._text = '';
+H.ctx.FindChildTraverse('UserName')._text = '';
+load(PAGE);
+advance(5.2);
+assert(pending(H.ctx.FindChildTraverse('PlStatlocker')), 'the card gives up when no identity settles in 5 s');
+H.ctx.FindChildTraverse('PlAccountId')._text = '3333333';
+H.ctx.FindChildTraverse('AccountID')._text = '3333333';
+H.ctx.FindChildTraverse('UserName')._text = 'Bea';
+advance(1.2);
+assert(!pending(H.ctx.FindChildTraverse('PlStatlocker')), 'a later player on the same card still gets a fresh wait');
+
 bootCard(true, false, '');
 load(PAGE);
 advance(0.9);

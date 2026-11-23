@@ -200,7 +200,7 @@ const cardMain = () => {
 	const user = ctx.FindChildTraverse('UserName');
 	const nick = ctx.FindChildTraverse('UserNickname');
 	const rich = ctx.FindChildTraverse('UserRichPresence');
-	const st = { phase: 'seek', prev: null, since: 0, started: nowMs(), seenLoad: false, confirmed: '', id: '', timer: null, gen: 0, seeking: true, failed: false };
+	const st = { phase: 'seek', prev: null, since: 0, started: nowMs(), watchAt: 0, seenLoad: false, confirmed: '', id: '', timer: null, gen: 0, seeking: true, failed: false };
 
 	const read = () => {
 		const id = agreeIds([textOf(probe), textOf(account)]);
@@ -223,6 +223,7 @@ const cardMain = () => {
 		st.seeking = true;
 		st.prev = null;
 		st.since = 0;
+		st.started = nowMs();
 		st.gen++;
 		hide();
 		arm(0.1);
@@ -232,9 +233,10 @@ const cardMain = () => {
 		st.seeking = false;
 		st.id = row.id;
 		st.confirmed = row.fp;
+		st.watchAt = nowMs();
 		links(!!statUrl(row.id));
 		requestRank(rank, row.id, st.gen, st);
-		arm(nowMs() - st.started < WATCH_MS ? 0.016 : 0.1);
+		arm(0.016);
 	};
 	function step() {
 		st.timer = null;
@@ -243,13 +245,13 @@ const cardMain = () => {
 		const t = nowMs();
 		if (row.loading) st.seenLoad = true;
 		if (st.phase === 'hold') {
-			if (row.loading || row.fp !== st.confirmed) { seek(); return; }
-			arm(t - st.started < WATCH_MS ? 0.016 : 0.1);
+			if (row.loading || row.id !== st.id || row.fp !== st.confirmed) { seek(); return; }
+			arm(t - st.watchAt < WATCH_MS ? 0.016 : 0.1);
 			return;
 		}
 		if (st.phase === 'giveup') {
-			if (row.fp && row.fp !== st.confirmed && !row.loading && row.id) { seek(); return; }
-			arm(t - st.started < WATCH_MS ? 0.016 : 0.1);
+			if (row.loading || (row.id && row.fp !== st.confirmed)) { seek(); return; }
+			arm(t - st.watchAt < WATCH_MS ? 0.016 : 0.1);
 			return;
 		}
 		const fresh = row.local || (st.seenLoad && !row.loading) || row.fp !== st.confirmed;
@@ -257,7 +259,7 @@ const cardMain = () => {
 		const wait = row.local || row.status ? CARD_FAST_MS : CARD_SLOW_MS;
 		if (!row.loading && row.id && row.name && fresh && same && st.since && t - st.since >= wait) { settle(row); return; }
 		if (!same) { st.prev = row; st.since = t; }
-		if (t - st.started >= CARD_GIVEUP_MS) { st.phase = 'giveup'; st.seeking = false; hide(); }
+		if (t - st.started >= CARD_GIVEUP_MS) { st.phase = 'giveup'; st.seeking = false; st.watchAt = t; hide(); }
 		arm(0.1);
 	}
 	const press = which => {
