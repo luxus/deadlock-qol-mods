@@ -169,10 +169,19 @@ Schematische Darstellung (gerendert aus diesen Massen, kein Screenshot):
   `SelectedScreen_Team2`, `SelectedScreen_Scoreboard` (weitere: `_Graphs`, `_LocalPlayer`, `_Ranked`,
   `_HeroReleaseVoteResults`, ohne Reihe). Diese Klassen stehen nicht in Valves CSS/JS von Build 6864;
   sie kommen vermutlich aus C++. (O-C1)
-- **Match-ID**: Text des ersten Labels mit ID `MatchID` unter der UI-Wurzel.
+- **Match-ID**: Text des ersten Labels mit ID `MatchID` unter der UI-Wurzel, in Suchreihenfolge (3.3).
+  Es gibt fünf solche Labels (vier im Post-Game-Layout, eins im MVP-Layout); sie zeigen dieselbe ID.
 - **UI-Wurzel**: oberster Vorfahr des Kontextpanels (so weit nach oben laufen, wie es Eltern gibt).
 
 ### 3.2 Wann die Reihen sichtbar sind
+
+**Lebensdauer des Zustands (SG-C4):** Jede geladene Instanz eines der beiden Layouts beginnt mit
+leerer "zuletzt gesehener Match-ID". Die erste Prüfung nach dem Laden ist deshalb immer ein Reset
+(Schritt 1), auch wenn es dasselbe Match ist: Reihen wieder sichtbar, "Alle erledigt" gelöscht
+(auch die Klasse an der Post-Game-Wurzel), Markierungen gelöscht. Wird ein Layout neu geladen,
+kommen die Reihen also zurück. Kein Speicher über die Lebensdauer der Layout-Instanz hinaus.
+Die Klasse an der Post-Game-Wurzel dient nur dazu, dass die zweite, gleichzeitig geladene
+Instanz das "Alle erledigt" der ersten sieht.
 
 Prüfung alle **0.25 s**, solange eines der beiden Post-Game-Layouts geladen ist (also auch, wenn das
 Post-Game für ein Match aus der Match History geöffnet wird):
@@ -196,6 +205,11 @@ Folgen, die im Spiel sichtbar sein müssen:
 ### 3.3 Was als Commend-Ziel zählt
 
 Gesucht wird im **ganzen** Baum unter der UI-Wurzel (alle Karussell-Screens, nicht nur der sichtbare).
+
+**Suchreihenfolge (SG-C3), gilt für jede Suche in dieser Spec:** Tiefensuche, ein Panel vor seinen
+Kindern, Kinder in Layout-Reihenfolge (Kind 0 zuerst). Keine Obergrenze für die Zahl der besuchten
+Panels: Der Baum unter der UI-Wurzel kann sehr gross sein, ein Abbruch nach N Panels verliert still
+Ziele. "Erster Treffer" heisst immer: erster in dieser Reihenfolge.
 Ziele sind Valve-Panels:
 
 | Valve-Element | Art |
@@ -211,9 +225,18 @@ Zu jedem Ziel gehört ein **Besitzer**: der nächste Vorfahr mit Klasse `MVPHono
 `CanReturnCommend`, `Player` oder `MVPDetails`; fehlt der, das Panel `MVPHeroScenePanelMask`
 (falls Vorfahr), sonst das Ziel selbst.
 
-**Spielername des Besitzers**: Text des Kindes `PlayerName`, sonst `MVPPlayerName`, sonst erstes
-Kind mit Klasse `PlayerName`. Erster nicht-leerer Text im Teilbaum. HTML-Tags entfernen, trimmen,
-klein schreiben.
+**Spielername des Besitzers (SG-C1)**: erster **Nachfahre** (beliebig tief, Suchreihenfolge) mit ID
+`PlayerName`, sonst erster Nachfahre mit ID `MVPPlayerName`, sonst erster Nachfahre mit Klasse
+`PlayerName`. Valve legt diese Namen als `CitadelUserName`-Panels an, die selbst keinen Text haben;
+der Name steht in einem Kind-Label, oft zwei bis vier Ebenen unter dem Besitzer. Deshalb: im
+gefundenen Panel und seinem Teilbaum den ersten Text nehmen, der nicht leer ist (in Suchreihenfolge).
+Davon HTML-Tags entfernen, aussen trimmen, klein schreiben. Leerraum im Innern bleibt.
+
+Beispiele, die für die Entdopplung (3.4) stimmen müssen: Scoreboard-Zeile `.Player` → Name aus dem
+tief liegenden `#PlayerName`; MVP-Maske `#MVPHeroScenePanelMask` → Besitzer ist der Vorfahr
+`.MVPDetails` (nicht die Maske selbst), Name aus dessen `#MVPPlayerName`. So bekommt derselbe
+Spieler auf Scoreboard, Team-Screen und MVP-Screen denselben Namen und wird pro Klick nur einmal
+geklickt.
 
 **Ausgeschlossen** (gilt für Team, Enemy, All):
 - Eigener Spieler: Ziel oder Besitzer hat einen Vorfahren (bis 50 Ebenen) mit Klasse
@@ -247,10 +270,16 @@ Ziele werden sortiert: erst Knöpfe, dann Masken, dann Zurückgeben. Dann der Re
 
 | Button | Ziel wird geklickt, wenn |
 |---|---|
-| Team | nicht ausgeschlossen, Team-Zuordnung bekannt, eigenes Team bekannt, gleich |
-| Enemy | nicht ausgeschlossen, beide bekannt, verschieden |
-| All | nicht ausgeschlossen (Team egal) |
+| Team | jede Art (Knopf, Maske, Zurückgeben), nicht ausgeschlossen, Team-Zuordnung bekannt, eigenes Team bekannt, gleich |
+| Enemy | jede Art (Knopf, Maske, Zurückgeben), nicht ausgeschlossen, beide bekannt, verschieden |
+| All | jede Art (Knopf, Maske, Zurückgeben), nicht ausgeschlossen (Team egal) |
 | Return | Art "Zurückgeben" und (ID `ReturnButton` oder Klasse `CanReturnCommend` auf Ziel oder Besitzer); eigener Spieler ausgeschlossen; "schon commendet" und Markierung werden ignoriert |
+
+(SG-C2) Team, Enemy und All filtern **nicht** nach Art. Ein Zurückgeben-Ziel wird von ihnen wie
+jedes andere behandelt (Ausschlüsse oben, Team-Regel, Entdopplung). Nur Return beschränkt auf die
+Art Zurückgeben.
+
+Die Team-Zuordnung eines Ziels ist die Team-Zuordnung seines **Besitzers**.
 
 Doppelte vermeiden (nur Team, Enemy, All): pro Klick wird jeder Spielername höchstens einmal geklickt.
 Der erste Treffer in Sortierreihenfolge gewinnt. Ziele ohne Namen werden nicht entdoppelt.
@@ -314,7 +343,8 @@ sichtbarer Effekt. Empfehlung: weglassen. (O-C6)
 | Spieler schon commendet (vor oder nach Mod-Klick) | übersprungen |
 | Eigenes Team nicht bestimmbar | Team und Enemy tun nichts; All und Return funktionieren |
 | Kein `CanCommendPlayers` (Zuschauer, altes Match) | keine Reihen; Klicks wären wirkungslos |
-| Gleiches Match erneut geöffnet | gleiche Match-ID: kein Reset, "Alle erledigt" bleibt |
+| Gleiches Match, Layout bleibt geladen | gleiche Match-ID: kein Reset, "Alle erledigt" bleibt |
+| Gleiches Match, Layout wird neu geladen | Reset wie bei neuer Match-ID (3.2, Lebensdauer) |
 | Neues Match | Reset (3.2 Schritt 1) |
 | Spieler ohne Namen | nicht entdoppelt |
 | Valve-Layout-Drift (IDs fehlen) | still nichts tun, keine Fehler ins Log |

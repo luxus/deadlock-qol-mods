@@ -82,7 +82,7 @@ In Valves `#ProfileInfo` [Valve] wird `CitadelUserName#SelfName` in eine neue Ze
 | Button-Hintergrund | keiner, kein Rahmen |
 | Hover | Helligkeit 1.15, Übergang 0.12 s |
 | `SelfName` | unverändert Valve, aber nicht klickbar (`hittest` aus) |
-| Tooltip Statlocker | `View Statlocker Profile` (fest Englisch), Valve `UIShowTextTooltip` / `UIHideTextTooltip` |
+| Tooltip Statlocker | `View Statlocker Profile` (fest Englisch), Valve `UIShowTextTooltip` / `UIHideTextTooltip`. Der Text ist im Event-String ein Literal in einfachen Anführungszeichen (im XML `&apos;…&apos;`), nicht nackt |
 | Tooltip DeadChaps | `View DeadChaps Profile` (fest Englisch) |
 | Startzustand Buttons | versteckt und deaktiviert, bis die Identität feststeht (3.3) |
 
@@ -102,7 +102,7 @@ Unter Valves `#ForumButton`, als letztes Kind von `#ProfileInfo`:
 | Platzhalter-Fläche | 110 × 92 px, zentriert, clip |
 | Platzhalter-Slot | 110 × 88 px, zentriert |
 | Platzhalter-Bild | Valve `s2r://panorama/images/ranked/badges/rank00_lg_psd.vtex` [Valve, Obscurus-Badge, 404 × 324], füllt den Slot, Skalierung "stretch-to-fit-preserve-aspect", Deckkraft 0.72, `pre-transform-scale2d` 0.92 |
-| Spinner | 24 × 24 px, zentriert über dem Platzhalter (Ebene 3), Bild `s2r://panorama/images/control_icons/spinner_png.vtex` [Valve], contain, Einfärbung `#d9ffff`, Deckkraft 0.92, dreht 0° → 360° in 1.1 s linear, endlos |
+| Spinner | 24 × 24 px, zentriert über dem Platzhalter (Ebene 3), Bild `s2r://panorama/images/control_icons/spinner_png.vtex` [Valve], contain, Einfärbung `#d9ffff`, Deckkraft 0.92, dreht 0° → 360° in 1.1 s linear, endlos, über die Eigenschaft `pre-transform-rotate2d` in den Keyframes (nicht `transform`) |
 | Rang-Bild | 110 × 76 px Fläche, Bild darin 110 × 76, zentriert, clip, Skalierung "stretch-to-fit-preserve-aspect" |
 
 ### 2.3 Profilkarte: Account-ID-Zeile mit Rang
@@ -165,7 +165,7 @@ und Copy-Build). Keine Valve-Spalte verschiebt sich gegenüber dem Tabellenkopf.
 | Übergang | Skalierung und Helligkeit, 0.08 s, ease-in-out |
 | Logo im Button | 30 × 30 px, zentriert, contain, nicht klickbar |
 | Reihenfolge | Statlocker, DeadChaps |
-| Tooltip | `View Statlocker Profile` / `View DeadChaps Profile` (fest Englisch) |
+| Tooltip | `View Statlocker Profile` / `View DeadChaps Profile` (fest Englisch), Literal in einfachen Anführungszeichen wie 2.1 |
 | Sichtbarkeit | immer sichtbar (ausser Summenzeile und Settings), auch wenn keine gültige ID gelesen werden kann |
 
 Schema: `assets/profile-links-scoreboard-slot.png`.
@@ -210,7 +210,7 @@ die in das jeweilige Valve-Layout eingefügt werden:
 
 | Ort | Versteckte Labels mit Text-Binding | Weitere Quellen |
 |---|---|---|
-| Profilseite (in `#ProfileInfo`, nach `#ForumButton`) | `{i:r:account_id}`, `{i:account_id}`, `{i:friend_code}` | Text von Valves Label `.FriendID` (`#Citadel_Profile_FriendID`), alle Texte unter `#SelfName` |
+| Profilseite (in `#ProfileInfo`, nach `#ForumButton`) | `{i:r:account_id}`, `{i:account_id}`, `{i:friend_code}` | alle Texte unter `#SelfName`. **Nicht** Valves sichtbares Label `.FriendID` (SG-P6: das alte pak liest es nicht) |
 | Profilkarte (in `#AccountID`, nach Valves Label) | `{i:r:account_id}` | Text von Valves Label `.AccountID` |
 | Scoreboard (am Anfang von `.PlayerInfoContainer`) | `{i:r:account_id}`, `{i:account_id}`, `{i:player_account_id}`, `{i:r:player_account_id}` | Attribute `accountid`, `account_id`, `player_account_id` an `#PlayerName` und an der Zeile |
 
@@ -220,15 +220,25 @@ die in das jeweilige Valve-Layout eingefügt werden:
 3. Genau `[U:1:N]` → N.
 4. Nur Ziffern, 1–10 Stellen → diese Zahl. Genau 17 Ziffern → SteamID64 minus `76561197960265728`.
 5. Sonst im Text suchen: alle `[U:1:N]`, alle allein stehenden 17-stelligen Zahlen (als SteamID64).
-   Wenn der Text "account id" oder "friend code" enthält (Gross/klein egal): die Ziffern nach diesem
-   Wort (wenn dort nur Ziffern, Leerzeichen, Punkte, Kommas, Apostrophe, Unterstriche oder Bindestriche
-   stehen) und jede allein stehende Zahl mit 6–10 Stellen.
+   Wenn der Text eine der Wortgruppen "account id" oder "friend code" als ganze Wörter enthält
+   (Gross/klein egal, zwischen den beiden Wörtern beliebiger Leerraum oder keiner, also auch
+   "AccountID"): der Rest nach dem **ersten** Vorkommen, ohne einen direkt folgenden Doppelpunkt und
+   Leerraum. Besteht dieser Rest nur aus Ziffern, Leerzeichen, Punkten, Kommas, Apostrophen (`'` und
+   `’`), Unterstrichen oder Bindestrichen (und ist nicht leer): alle Nicht-Ziffern entfernen, führende
+   Nullen weg, dann wie Schritt 4 (1–10 Stellen als ID, genau 17 Stellen als SteamID64). Dazu jede
+   allein stehende Zahl mit 6–10 Stellen. (SG-P10)
 6. Jede Kandidaten-ID muss im gültigen Bereich liegen. Pro Text genau ein eindeutiger Kandidat, sonst keine ID.
 
 Danach über alle Quellen: genau eine eindeutige ID → das ist die ID. Mehrere verschiedene → **Konflikt**,
 behandelt wie "keine ID". Keine → keine ID.
 
-**Text → ID, Scoreboard**: Quellen in der Reihenfolge der Tabelle. HTML-Tags entfernen, alle
+**Scoreboard-Quellen, genaue Reihenfolge (SG-P9):** die vier versteckten Labels in der Reihenfolge
+der Tabelle (Text, sonst das Attribut `text`); dann an `#PlayerName` die Attribute `accountid`,
+`account_id`, `player_account_id`, dann dieselben drei als JS-Eigenschaft des Panels; dann an der
+Zeile `.Player` die Attribute `account_id`, `accountid`, `player_account_id`, dann die JS-Eigenschaften
+`accountid`, `account_id`, `player_account_id`.
+
+**Text → ID, Scoreboard**: Quellen in der Reihenfolge oben. HTML-Tags entfernen, alle
 Nicht-Ziffern entfernen, 6–10 Ziffern verlangen, führende Nullen weg, Bereich prüfen. Die erste gültige gewinnt.
 
 ### 3.2 URLs
@@ -258,9 +268,19 @@ Das Rang-Bild ist ein Bild-Abruf, kein Match-History-Aufruf. Pro ID höchstens e
 
 Ohne ID (z. B. Binding leer, Konflikt): bleibt endlos im Zustand Laden (Spinner dreht), Buttons versteckt.
 
+**Text eines Valve-Namens (SG-P1, gilt für `#SelfName`, `#UserName`, `#UserNickname`,
+`#UserRichPresence`):** Diese Panels (`CitadelUserName`) haben selbst keinen Text. "Text von X" heisst
+in dieser Spec: alle nicht-leeren Texte von X und seinem Teilbaum bis 8 Ebenen tief (ein Panel vor
+seinen Kindern, Kinder in Layout-Reihenfolge), mit Leerzeichen verbunden, dann HTML-Tags entfernen,
+Leerraum zusammenfassen, trimmen. Wer nur die eigene Text-Eigenschaft liest, bekommt immer leer.
+
 **Hover:** Jedes Mal, wenn die Maus das Wurzel-Panel der Profilseite betritt (`onmouseover` an
 `CitadelProfilePage`), beginnt der Ablauf neu ab Schritt 1: Buttons verschwinden, Spinner erscheint,
 nach ~2 s wieder da. (O-P2)
+
+(SG-P5) Identisch heisst: **jedes** `onmouseover`-Event an der Seitenwurzel startet neu, ohne
+Entprellung, ohne Zeitfenster, ohne eigenen `onmouseout`-Handler. Feuert Panorama das Event auch bei
+Bewegungen über Kinder, flackert es so oft wie im alten pak. Das ist gewollt, bis Kai anders entscheidet.
 
 **Klick auf ein Logo:** Nur wenn die aktuell gelesene ID und der aktuelle Fingerabdruck (ID + Text von
 Valves `UserName` + `UserNickname` + "eigener Spieler") noch genau die beim Anzeigen gespeicherten sind,
@@ -275,23 +295,35 @@ Die Karte gibt es in zwei Formen:
 
 Unterschied: Die Text-Buttons erscheinen **nur** in der Kontextmenü-Karte. Der Rang erscheint in beiden.
 
-**Ablauf beim Öffnen (Laden 0.01 s nach dem Laden des Layouts, und bei jedem Hover über die Karte):**
+**Ablauf beim Öffnen (Start 0.01 s nach dem Laden des Layouts, und bei jedem Hover über die Karte):**
+
+Ein **Durchlauf** beginnt mit Schritt 1. Alle Zeiten unten (Wartezeit, 5000 ms, Frische) zählen ab
+dem Beginn **dieses** Durchlaufs, nicht ab dem Laden der Karte (SG-P2). Die erste Lesung kommt
+0.1 s nach Beginn des Durchlaufs (beim Laden also bei 0.11 s).
 1. Rang-Fläche versteckt, Buttons versteckt.
 2. Alle 0.1 s lesen: ID (3.1), Name = Text von `#UserName`, Status = Text von `#UserRichPresence`,
    "eigener Spieler" = Klasse `isLocalPlayer` an der Karte oder einem der 5 nächsten Vorfahren (O-P3),
    "lädt" = Klasse `Loading` an der Karte.
-3. Die Lesung zählt als **frisch**, wenn: eigener Spieler, oder die Karte war seit Start einmal im Zustand
+3. Die Lesung zählt als **frisch**, wenn: eigener Spieler, oder die Karte war seit Beginn dieses
+   Durchlaufs (Zustand im Moment des Beginns eingeschlossen) einmal im Zustand
    "lädt" und ist es jetzt nicht mehr, oder der Fingerabdruck unterscheidet sich vom zuletzt bestätigten
    (die Karte wird von Valve für verschiedene Spieler wiederverwendet).
 4. Identität steht, wenn: nicht lädt, kein Konflikt, ID und Name da, frisch, zwei gleiche Lesungen
    hintereinander (ID, Name, Status, Fingerabdruck, eigener Spieler), und seit der ersten mindestens
    **750 ms** (eigener Spieler oder Status nicht leer) bzw. **1500 ms** (Status leer).
+   Ist bei einer Lesung eine der Bedingungen "nicht lädt, kein Konflikt, ID da, Name da, frisch"
+   nicht erfüllt, beginnt die Zählung von vorn (die nächste passende Lesung ist wieder die erste).
 5. Identität steht → Rang-Fläche sichtbar im Zustand Laden, Buttons sichtbar und klickbar (nur
    Kontextmenü-Karte), Rang-Bild anfragen (3.5).
-6. Nach **5000 ms** ohne stehende Identität: Rang bleibt versteckt, Buttons bleiben versteckt.
+6. Nach **5000 ms** ab Beginn des Durchlaufs ohne stehende Identität: Rang bleibt versteckt, Buttons
+   bleiben versteckt. Danach beobachten wie Schritt 7 (Intervalle ab diesem Moment). Neustart (neuer
+   Durchlauf mit neuer 5000-ms-Frist), sobald die Karte "lädt" oder eine ID da ist und der
+   Fingerabdruck vom zuletzt bestätigten abweicht. Ein späterer Spieler auf derselben Karte muss also
+   wieder normal nach 750/1500 ms erscheinen.
    Die Beobachtung (Schritt 7) läuft trotzdem; taucht später eine ID mit neuem Fingerabdruck auf,
    beginnt der Ablauf neu.
-7. Beobachten: in den ersten 8 s alle 0.016 s, danach alle 0.1 s, ohne Ende, solange die Karte lebt.
+7. Beobachten: in den ersten 8 s **ab Beginn dieser Beobachtung** alle 0.016 s, danach alle 0.1 s,
+   ohne Ende, solange die Karte lebt. Jede neu stehende Identität startet die 8 s neu.
    Wird die Karte "lädt", oder ändert sich ID oder Fingerabdruck: zurück auf Schritt 1.
 
 **Hover während des Ablaufs:** Läuft gerade Schritt 2–4, wird der Hover ignoriert. Wird beobachtet und
@@ -320,7 +352,8 @@ Ablauf:
 3. Altes Rang-Bild entfernen. Ein neues `Image`-Panel in der Bildfläche anlegen
    (`$.CreatePanel('Image', …)`), Skalierung "stretch-to-fit-preserve-aspect", unsichtbar, dann
    `SetImage(url)`.
-4. Event `ImageLoaded` am Bild: nur wenn die Identität sich inzwischen nicht geändert hat und kein
+4. Event `ImageLoaded` am Bild: im Moment des Events neu lesen. Nur wenn die Karte nicht lädt, kein
+   Konflikt besteht, ID **und Fingerabdruck** noch die beim Anfragen sind (SG-P7) und kein
    neuerer Durchlauf läuft → Zustand Fertig, Bild sichtbar.
 5. Event `ImageFailedLoad`: Bild verstecken, Fehlschlag für 15 s merken, Zustand "Nicht verfügbar",
    Bild-Panel löschen (`DeleteAsync(0)`), nachdem der Zustand gesetzt ist.
@@ -374,7 +407,12 @@ Die eigenen Stylesheets müssen auf diese Klassen reagieren (Namen frei, Glue en
 Nicht betroffen von "aus": die immer sichtbare Account-ID-Zeile der Karte, die Namenszeile (420 × 36),
 die entpackten Commend-Spalten im Scoreboard und die versteckten ID-Labels.
 
-HUD-Registrar in `hud_match_start.xml` [Valve-Layout, Kai-Muster]: meldet nur das Schema an, damit der
+Die Klassen setzt jeder Layout-Kontext **nur an seinem eigenen Kontextpanel**. Kein Durchsuchen des
+UI-Baums, auch nicht für andere offene Layouts: jede Profilkarte, Profilseite und jedes Scoreboard
+hat seine eigene Registrierung und bekommt die Änderung selbst (SG-P13).
+
+HUD-Registrar in `hud_match_start.xml` [Valve-Layout, Kai-Muster]: meldet nur das Schema an, mit einem
+Rückruf, der nichts tut (setzt keine Klassen), damit der
 Block im ADDONS-Fenster im Hauptmenü und in Matches erscheint.
 
 ADDONS-Block (gezeichnet von Kais Addon Settings Library 1.2.3, Build 9). Referenz:
