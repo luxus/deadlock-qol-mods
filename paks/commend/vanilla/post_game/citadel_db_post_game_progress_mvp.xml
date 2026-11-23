@@ -1,0 +1,75 @@
+<!-- Valve layout, ClientVersion 6864 (18 Nov 2026), from SteamTracking/GameTracking-Deadlock. Unmodified input for tools/layout.py. -->
+<!-- xml reconstructed by Source 2 Viewer - https://valveresourceformat.github.io -->
+<root>
+	<styles>
+		<include src="s2r://panorama/styles/citadel_base_styles.vcss" />
+		<include src="s2r://panorama/styles/post_game/citadel_db_post_game_progress_mvp.vcss" />
+	</styles>
+	<scripts>
+		<include src="s2r://panorama/scripts/async.vts" />
+		<include src="s2r://panorama/scripts/post_game/citadel_db_post_game_progress_mvp.vts" />
+	</scripts>
+	<snippets>
+		<snippet name="MVPHonorableMention">
+			<Panel class="MVPHonorableMention">
+				<Panel class="MainContents">
+					<Panel class="HeroFrame">
+						<CitadelHeroScenePanelNew id="HeroScenePanel" heroscenestyle="PostGamePortrait" />
+					</Panel>
+					<Panel class="KeyPlayerIdentity" hittestchildren="false">
+						<Label class="KeyPlayerTitle" text="#Citadel_Post_Game_MVP_HonorableMention" />
+						<CitadelHeroLogo id="HeroLogo" />
+					</Panel>
+					<ParticleScenePanel id="CommendFX" hittest="false" particleName="particles/ui/ui_commend.vpcf" fov="20" cameraOrigin="200 0 0" lookAt="0 0 0" squarePixels="true" renderdeferred="true" deferredalpha="true" startActive="false" />
+					<Panel class="Icon" />
+				</Panel>
+				<Panel id="Accolades" />
+				<Panel id="Awards" hittestchildren="false" />
+				<Panel class="Footer">
+					<Panel class="HeroNameContainer">
+						<CitadelHeroBadgeIcon id="HeroBadgeIcon" class="PostGame" />
+						<Label class="HeroName" text="{s:hero_name}" />
+					</Panel>
+					<CitadelUserName id="PlayerName" />
+				</Panel>
+				<Panel class="GotCommendedIcon" />
+				<Panel id="HeroScenePanelMask" />
+			</Panel>
+		</snippet>
+	</snippets>
+	<CitadelPostGameProgressMVP class="PostGameScreen" navclass="MVP" navtext="#Citadel_Post_Game_MVP" navtooltip="#Citadel_Post_Game_MVP">
+		<Panel class="MVPBackground" />
+		<Label class="MatchMode" text="{s:match_mode}" />
+		<Label id="MatchID" text="#Citadel_MatchDetails_MatchID" onmouseover="UIShowTextTooltip( #Citadel_PostGame_CopyMatchID )" onmouseout="UIHideTextTooltip()" onactivate="CitadelPostGameCopyMatchID()" />
+		<Panel class="KeyPlayerTrophySet">
+			<Panel class="KeyPlayerTrophy" />
+			<Label class="KeyPlayerHeader" text="#Citadel_Post_Game_MVP_KeyPlayers" />
+		</Panel>
+		<Panel class="MVPHeroContainer">
+			<CitadelHeroSpotlight id="MVPHeroSpotlight" heroscenestyle="HeroReveal" />
+		</Panel>
+		<ParticleScenePanel id="MVPCommendFX" hittest="false" particleName="particles/ui/ui_commend.vpcf" fov="20" cameraOrigin="200 0 0" lookAt="0 0 0" squarePixels="true" renderdeferred="true" deferredalpha="true" startActive="false" />
+		<Panel class="MVPDetails Player" hittest="false">
+			<Panel class="MVPTrophySet">
+				<Panel class="Icon" />
+				<Panel class="MVPTrophy" />
+				<Label class="MVPTitle" text="#Citadel_Post_Game_MVP" />
+			</Panel>
+			<Panel id="MVPAccolades" />
+			<Panel id="MVPAwards" />
+			<Panel class="MVPPlayerIdentity">
+				<Panel class="HeroNameContainer">
+					<CitadelHeroBadgeIcon id="MVPHeroBadgeIcon" class="MVP" />
+					<CitadelHeroLogo id="MVPHeroLogo" />
+				</Panel>
+				<Panel class="PlayerInfo">
+					<Label class="MVPPlayedBy" text="#Citadel_Post_Game_PlayedBy" />
+					<CitadelUserName id="MVPPlayerName" />
+					<Panel class="GotCommendedIcon" />
+					<Panel id="MVPHeroScenePanelMask" hittest="true" />
+				</Panel>
+			</Panel>
+		</Panel>
+		<Panel id="HonorableMentions" />
+	</CitadelPostGameProgressMVP>
+</root>
