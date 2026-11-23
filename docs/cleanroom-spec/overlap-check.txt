@@ -1,0 +1,11 @@
+adopted files: 44; spec files: ['commend.md', 'profile-links.md']
+identical lines >40 chars: 0
+lines sharing a 41-char window with the adopted corpus: 8
+  WIN ('commend.md', 28, '/post_game/citadel_db_page_post_game_new.')
+  WIN ('commend.md', 29, '/post_game/citadel_db_post_game_progress_')
+  WIN ('commend.md', 61, 'panorama/scripts/deadlock_commend_setting')
+  WIN ('commend.md', 62, 'panorama/scripts/deadlock_commend_registe')
+  WIN ('commend.md', 122, 's2r://panorama/images/icons/icon_thumbsup')
+  WIN ('profile-links.md', 34, '/post_game/citadel_db_post_game_scoreboar')
+  WIN ('profile-links.md', 104, 's2r://panorama/images/ranked/badges/rank0')
+  WIN ('profile-links.md', 105, 's2r://panorama/images/control_icons/spinn')
