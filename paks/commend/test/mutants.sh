@@ -23,7 +23,7 @@ open('/tmp/dc_mutant.js','w').write(s)
 	fi
 }
 run tick-every-frame "const TICK_S = 0.25;" "const TICK_S = 0.016;"
-run all-does-not-stick "const show = can && !bag.all && screen === row.screen;" "const show = can && screen === row.screen;"
+run all-does-not-stick "const show = can && !all && screen === row.screen;" "const show = can && screen === row.screen;"
 run second-click-repeats "if (marked(target)) return true;" "if (false && marked(target)) return true;"
 run team-clicks-enemies "if (kind === 'team' && (!mine || !team || team !== mine)) continue;" "if (kind === 'team' && false) continue;"
 if [ "$fail" != 0 ]; then
