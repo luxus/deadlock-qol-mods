@@ -1,6 +1,6 @@
 # Addon Settings
 
-`1.2.5` (build 11) is embedded in all mods in this repo. The highest `BUILD` among the installed paks hosts.
+`1.2.5` (build 12) is embedded in all mods in this repo. The highest `BUILD` among the installed paks hosts.
 
 ```sh
 sh lib/addon-settings/vendor.sh print 1.2.5

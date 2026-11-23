@@ -20,7 +20,7 @@ const settings = read('panorama/scripts/profile_links_settings.js');
 assert(settings.includes("id: 'deadlock_profile_links'"), 'addon id');
 assert(settings.includes("key: 'statlocker'") && settings.includes("key: 'deadchaps'"), 'site toggles');
 assert(settings.includes('needs: [\'on\']') || settings.includes('needs: ["on"]'), 'site toggles need the master switch');
-assert(settings.includes('const BUILD = 11;'), 'addon settings build 11');
+assert(settings.includes('const BUILD = 12;'), 'addon settings build 12');
 assert(settings.includes("const VERSION = '2.0.0';") && settings.includes("'Deadlock Profile Links: ' + VERSION + ' loaded"), 'loaded log line');
 assert(read('panorama/scripts/profile_links_register.js').includes("'Deadlock Profile Links: ' + VERSION + ' register hud'"), 'hud log line');
 assert(read('panorama/scripts/profile_links_register.js').includes('AddonSettings.register(PL_SCHEMA, () => {})'), 'hud registrar callback does nothing');

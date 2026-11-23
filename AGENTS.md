@@ -12,4 +12,4 @@
 | Zipline Boost hides with `visible = false`. A `ZbHidden` class does not count | mutant `class-only-hide` |
 | The zipline overlay loads `zipline_boost_overlay.xml`, because `hud.xml` does not supply its stylesheet | mutant `no-own-layout` |
 | A click on the parked HUD++ tab, while our tab is up, runs HUD++ `showTab` | `tools/check-hudpp-tabs.sh` |
-| `CanChangeHero` during the menu look leaves PLAY at 312. The check prints FINDING | `tools/check-play-pin.sh` |
+| `step()` calls `syncPlay()` so `CanChangeHero` lifts PLAY from 312 to 382 (`PlayGap` holds) | `tools/check-play-pin.sh` |

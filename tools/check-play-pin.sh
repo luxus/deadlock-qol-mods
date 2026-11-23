@@ -19,13 +19,11 @@ if sh tools/formal/tlc.sh "$spec" "$bug" >"$out" 2>&1; then
 	exit 1
 fi
 if [ "$kind" = "LIFTS" ]; then
-	echo "step() now calls syncPlay. PlayGap holds for that code, and this finding is stale." >&2
-	echo "Point tools/check-play-pin.sh at PlayPinFix.cfg as the source config." >&2
+	echo "source config: PlayGap holds (step() calls syncPlay)"
 	rm -f "$out"
-	exit 1
+	exit 0
 fi
-echo "FINDING PlayGap: CanChangeHero arrives, the next menu look leaves PLAY at 312."
-echo "step() does not call syncPlay. openWindow still lifts, which is the ADDONS click, not the first Esc open."
-echo "improved-quickbuy e17b680. Both libraries. This command exits 0 because the model still finds it."
+echo "step() no longer calls syncPlay(). CanChangeHero during the menu look leaves PLAY at 312." >&2
+echo "Restore syncPlay() in lib/addon-settings/1.2.5/addon_settings.js (improved-quickbuy e17b680)." >&2
 rm -f "$out"
-exit 0
+exit 1
