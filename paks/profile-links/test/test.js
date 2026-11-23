@@ -53,6 +53,13 @@ assert(C.created === 1 && C.images === 1, 'one rank image request: ' + C.created
 resetCounts();
 advance(1);
 assert(C.created === 0 && C.images === 0, 'a settled page does not request the image again');
+H.ctx.events.onmouseover();
+advance(1.5);
+H.ctx.events.onmouseover();
+advance(1.5);
+assert(pending(stat), 'a second mouseover restarts the two second wait');
+advance(0.8);
+assert(!pending(stat), 'logos return about two seconds after the last mouseover');
 stat.events.onactivate();
 assert(H.clicks.some(c => c.ev === 'ExternalBrowserGoToURL' && c.id === 'https://statlocker.gg/profile/1234567'), 'statlocker click: ' + JSON.stringify(H.clicks));
 

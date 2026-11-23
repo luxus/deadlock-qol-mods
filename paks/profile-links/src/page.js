@@ -129,7 +129,7 @@ const pageMain = () => {
 	const self = ctx.FindChildTraverse('SelfName');
 	const user = ctx.FindChildTraverse('UserName');
 	const nick = ctx.FindChildTraverse('UserNickname');
-	const st = { phase: 'seek', prev: null, since: 0, timer: null, id: '', fp: '', inside: false, leave: null, gen: 0, holdAt: 0, watchEnd: 0, failed: false };
+	const st = { phase: 'seek', prev: null, since: 0, timer: null, id: '', fp: '', gen: 0, holdAt: 0, watchEnd: 0, failed: false };
 
 	const read = () => {
 		const sources = probes.map(textOf);
@@ -191,17 +191,8 @@ const pageMain = () => {
 	};
 	if (ok(stat)) stat.SetPanelEvent('onactivate', () => press('stat'));
 	if (ok(chaps)) chaps.SetPanelEvent('onactivate', () => press('chaps'));
-	// SPEC-OPEN O-P2: child crossings fire out then over. A 0.05 s gap treats that as one stay.
-	ctx.SetPanelEvent('onmouseover', () => {
-		st.leave = cancel(st.leave);
-		if (st.inside) return;
-		st.inside = true;
-		restart();
-	});
-	ctx.SetPanelEvent('onmouseout', () => {
-		st.leave = cancel(st.leave);
-		st.leave = $.Schedule(0.05, () => { st.leave = null; st.inside = false; });
-	});
+	// SPEC-OPEN O-P2 / SG-P5: every onmouseover restarts. No debounce and no onmouseout handler.
+	ctx.SetPanelEvent('onmouseover', () => { restart(); });
 	restart();
 };
 
