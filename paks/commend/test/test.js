@@ -90,6 +90,13 @@ H.ctx.RemoveClass('SelectedScreen_Team1');
 H.ctx.AddClass('SelectedScreen_Team2');
 $.DcApply();
 assert(!shown(H.ctx.FindChildTraverse('DcRow_Team1')), 'all keeps the row hidden on the next screen');
+H.ctx.RemoveClass('SelectedScreen_Team2');
+H.ctx.AddClass('SelectedScreen_Team1');
+load(SRC);
+advance(0);
+assert(!H.ctx.BHasClass('DcAllDone'), 'a newly loaded layout clears All even for the same match');
+assert(shown(H.ctx.FindChildTraverse('DcRow_Team1')), 'rows come back when the layout loads again');
+assert(!('match' in H.root.cfg.DcCommend) && !('all' in H.root.cfg.DcCommend), 'match id and All are not stored globally');
 
 world('Team1');
 load(SRC);

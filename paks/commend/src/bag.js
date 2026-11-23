@@ -1,6 +1,5 @@
-// Shared across the HUD registrar and every post-game layout. A layout reload
-// keeps the match id and the All flag here; the class on the root is the copy
-// the spec also requires.
+// The switch is shared so the registrar and the post-game layout agree.
+// Match id and All belong to one layout instance (SG-C4), not this bag.
 const dcBag = () => {
 	let root = null;
 	try { if (typeof GameUI !== 'undefined' && GameUI.CustomUIConfig) root = GameUI.CustomUIConfig(); } catch (e) { root = null; }
@@ -8,6 +7,6 @@ const dcBag = () => {
 		if (!$.DcStore) $.DcStore = {};
 		root = $.DcStore;
 	}
-	if (!root.DcCommend || root.DcCommend.v !== '2.0.0') root.DcCommend = { v: '2.0.0', on: true, match: '', all: false };
+	if (!root.DcCommend || root.DcCommend.v !== '2.0.0' || 'match' in root.DcCommend || 'all' in root.DcCommend) root.DcCommend = { v: '2.0.0', on: root.DcCommend && root.DcCommend.on !== false };
 	return root.DcCommend;
 };

@@ -13,7 +13,11 @@ const pid = p => { try { return ok(p) ? String(p.id || '') : ''; } catch (e) { r
 const cancel = h => { if (h) { try { $.CancelScheduled(h); } catch (e) { /* ran */ } } return null; };
 
 const ctx = $.GetContextPanel();
-const state = { timer: null, rows: [], bound: false, matchLabel: null, canPanel: null, sig: '' };
+const state = { timer: null, rows: [], bound: false, matchLabel: null, canPanel: null, sig: '', match: '' };
+const postRoot = () => {
+	for (let a = ctx; ok(a); a = a.GetParent()) if (pid(a) === 'CitadelPostGameNew') return a;
+	return ctx;
+};
 
 const top = () => {
 	let a = ctx, last = ctx;
@@ -218,9 +222,7 @@ const act = kind => {
 	}
 	// SPEC-OPEN O-C4: no per-match cap. Every target that passes the filters is clicked.
 	if (kind === 'all') {
-		const bag = dcBag();
-		bag.all = true;
-		try { ctx.AddClass('DcAllDone'); } catch (e) { /* no class api */ }
+		try { postRoot().AddClass('DcAllDone'); } catch (e) { /* no class api */ }
 		apply(true);
 	}
 	return hits;
@@ -229,24 +231,24 @@ const apply = force => {
 	if (!ok(ctx)) return;
 	bind();
 	const bag = dcBag();
+	const root = postRoot();
 	const id = matchText();
-	if (id && id !== bag.match) {
-		bag.match = id;
-		bag.all = false;
-		try { ctx.RemoveClass('DcAllDone'); } catch (e) { /* no class api */ }
+	if (id && id !== state.match) {
+		state.match = id;
+		try { root.RemoveClass('DcAllDone'); } catch (e) { /* no class api */ }
 		clearMarks();
 		state.sig = '';
 	}
-	if (has(ctx, 'DcAllDone')) bag.all = true;
+	const all = has(root, 'DcAllDone');
 	const screen = screenNow();
 	const can = canNow();
 	const on = !!bag.on;
-	const sig = (bag.match || '') + '|' + screen + '|' + (can ? '1' : '0') + '|' + (bag.all ? '1' : '0') + '|' + (on ? '1' : '0') + '|' + state.rows.length;
+	const sig = (state.match || '') + '|' + screen + '|' + (can ? '1' : '0') + '|' + (all ? '1' : '0') + '|' + (on ? '1' : '0') + '|' + state.rows.length;
 	if (!force && sig === state.sig) return;
 	state.sig = sig;
 	for (let i = 0; i < state.rows.length; i++) {
 		const row = state.rows[i];
-		const show = can && !bag.all && screen === row.screen;
+		const show = can && !all && screen === row.screen;
 		paint(row.panel, show);
 		for (let k = 0; k < KINDS.length; k++) paint(row.buttons[KINDS[k]], show && on);
 	}
