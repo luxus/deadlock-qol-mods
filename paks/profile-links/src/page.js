@@ -1,4 +1,4 @@
-const VERSION = '2.0.1';
+const VERSION = '2.0.2';
 const CACHE_MS = 600000;
 const FAIL_MS = 15000;
 const PAGE_LOCK_MS = 2000;
@@ -77,7 +77,7 @@ const requestRank = (box, id, fp, gen, state, live) => {
 	let url = entry && nowMs() - entry.at < CACHE_MS ? entry.url : '';
 	if (!url) url = rankUrl(id);
 	bag.images[id] = { url: url, at: nowMs() };
-	const host = ok(box) && box.FindChild ? (box.FindChild('PlRankImage') || box) : box;
+	const host = ok(box) ? ((box.FindChildTraverse && box.FindChildTraverse('PlRankImage')) || (box.FindChild && box.FindChild('PlRankImage')) || box) : box;
 	let img = ok(host) && host.FindChild ? host.FindChild('PlRankShot') : null;
 	if (ok(img) && img.GetAttributeString('rankurl', '') === url && img.GetAttributeString('ready', '') === '1') {
 		showRank(box, 'ready');
@@ -88,7 +88,7 @@ const requestRank = (box, id, fp, gen, state, live) => {
 	if (ok(img)) { try { img.DeleteAsync(0); } catch (e) { /* replaced */ } img = null; }
 	try { img = $.CreatePanel('Image', host, 'PlRankShot'); } catch (e2) { bag.fails[id] = nowMs(); showRank(box, 'missing'); state.failed = true; return; }
 	if (img.SetScaling) img.SetScaling('stretch-to-fit-preserve-aspect');
-	img.hittest = false;
+	if (img.AddClass) img.AddClass('PlRankShot'); img.hittest = false;
 	try { img.style.visibility = 'collapse'; } catch (e3) { /* no style */ }
 	img.SetAttributeString('rankurl', url);
 	img.SetAttributeString('ready', '');

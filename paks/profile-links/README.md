@@ -1,6 +1,6 @@
 # Deadlock Profile Links
 
-2.0.1. Statlocker and DeadChaps links, plus a rank image, on the profile page, the profile card, and the post-game scoreboard.
+2.0.2. Statlocker and DeadChaps links, plus a rank image, on the profile page, the profile card, and the post-game scoreboard.
 
 Clean-room, MIT (LICENSE). Behaviour and measurements are `docs/cleanroom-spec/profile-links.md`.
 

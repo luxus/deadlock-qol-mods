@@ -7,7 +7,7 @@ const pageId = value => {
 	if (exact !== null) return exact;
 	const found = [];
 	scanSteamTokens(text, found);
-	const phrase = /(?:^|[^a-z0-9])((?:account\s*id|friend\s*code))(?![a-z0-9])/i.exec(text);
+	const phrase = /(?:^|[^a-z0-9])((?:account[\s-]*id|friend[\s-]*code|freundescode))(?![a-z0-9])/i.exec(text);
 	if (phrase) {
 		const rest = text.slice(phrase.index + phrase[0].length).replace(/’/g, "'").replace(/^[\s:#-]+/, '');
 		if (rest && !/[^0-9\s.,'_-]/.test(rest)) {
