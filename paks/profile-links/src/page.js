@@ -1,4 +1,4 @@
-const VERSION = '2.0.0';
+const VERSION = '2.0.1';
 const CACHE_MS = 600000;
 const FAIL_MS = 15000;
 const PAGE_LOCK_MS = 2000;

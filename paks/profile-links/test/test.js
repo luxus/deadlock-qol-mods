@@ -28,7 +28,7 @@ const bootPage = () => {
 bootPage();
 load(PAGE);
 assert(S.errors().length === 0, 'page loads: ' + S.errors().join(' | '));
-assert($.PlTest.VERSION === '2.0.0', 'version');
+assert($.PlTest.VERSION === '2.0.1', 'version');
 assert($.PlTest.pageId('1234567') === '1234567', 'plain account id');
 assert($.PlTest.pageId('[U:1:2000001]') === '2000001', 'steam id 3');
 assert($.PlTest.pageId('76561198000000000') === '39734272', 'steam64: ' + $.PlTest.pageId('76561198000000000'));
