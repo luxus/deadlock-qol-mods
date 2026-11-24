@@ -29,7 +29,7 @@ const bootPage = () => {
 bootPage();
 load(PAGE);
 assert(S.errors().length === 0, 'page loads: ' + S.errors().join(' | '));
-assert($.PlTest.VERSION === '2.0.2', 'version');
+assert($.PlTest.VERSION === '2.0.3', 'version');
 assert($.PlTest.pageId('1234567') === '1234567', 'plain account id');
 assert($.PlTest.pageId('[U:1:2000001]') === '2000001', 'steam id 3');
 assert($.PlTest.pageId('76561198000000000') === '39734272', 'steam64: ' + $.PlTest.pageId('76561198000000000'));
@@ -275,6 +275,68 @@ assert($.PlTest.boardId('76561198000000000') === '39734272', 'boardId converts S
 	advance(0.2);
 	assert(!page.BHasClass('PlOff') && page.BHasClass('PlNoStatlocker'), 'toggling master back ON updates surviving profile page');
 	assert(clientPanel.GetChildCount() === subsBefore - 1, 'destroyed layout subscriber panel is cleaned up');
+}
+
+// Takeover + Activated bubbling regression (1.2.6 build 13):
+// - Takeover must not unset style.marginBottom = null (Panorama alias property) or abort host cleanup
+// - Existing legacy <=1.2.4 client (onactivate on client panel, no Sub children) still receives values
+// - Existing 1.2.5 client (no onactivate on client panel, empty Sub child) and new client must not bubble into scan recursion
+{
+	const REG = fs.readFileSync(__dirname + '/../build/pak/panorama/scripts/profile_links_register.js', 'utf8');
+	for (const k in S.storage) delete S.storage[k];
+	S.storage.deadlock_profile_links_settings = JSON.stringify({ on: true, statlocker: true, deadchaps: true });
+	H.root = mk('Panel', null, 'UI');
+	H.root.cfg = {};
+	const esc = mk('Panel', H.root, 'EscapeMenu');
+	mk('Panel', mk('Panel', mk('Panel', esc, 'LeftStripe'), 'Menu'), 'SubOptions');
+	const changehero = mk('Button', esc, 'changehero');
+	changehero.SetAttributeString('AddonSettingsLift', '1');
+	const lifts = [];
+	const origSetAttr = changehero.SetAttributeString.bind(changehero);
+	changehero.SetAttributeString = (k, v) => { if (k === 'AddonSettingsLift') lifts.push(v); origSetAttr(k, v); };
+	let mb = '312px';
+	Object.defineProperty(changehero.style, 'marginBottom', {
+		get: () => mb,
+		set: v => {
+			if (v === null || v === undefined) throw new Error("Cannot set a property alias to undefined, only a base property, we don't support unset of alias alone");
+			mb = v;
+		},
+		configurable: true,
+	});
+	const host = mk('Panel', esc, 'AddonSettingsHost', 'AddonSettingsHost');
+	host.SetAttributeString('build', '11');
+	host.SetAttributeString('token', '11.old');
+	const staleHead = mk('Panel', host, 'OldHead', 'HudppHead');
+	const legacy = mk('Panel', host, 'AddonSettingsClient_legacy_mod', 'AddonSettingsClient');
+	legacy.SetAttributeString('schema', JSON.stringify({ id: 'legacy_mod', title: 'Legacy Mod', controls: [{ key: 'on', type: 'toggle', default: true }] }));
+	let legacyValues = '';
+	legacy.SetPanelEvent('onactivate', () => { legacyValues = legacy.GetAttributeString('values', ''); });
+	const old125 = mk('Panel', host, 'AddonSettingsClient_old_125', 'AddonSettingsClient');
+	old125.SetAttributeString('schema', JSON.stringify({ id: 'old_125', title: 'Old 125', controls: [{ key: 'on', type: 'toggle', default: true }] }));
+	const old125Sub = mk('Panel', old125, '', 'AddonSettingsSub');
+	old125Sub.SetAttributeString('values', '');
+	let old125SubValues = '', old125SubRings = 0;
+	old125Sub.SetPanelEvent('onactivate', () => { old125SubRings++; old125SubValues = old125Sub.GetAttributeString('values', ''); });
+	H.ctx = mk('Panel', H.root, 'HudMatchStart');
+	load(REG);
+	advance(1.2);
+	assert(!staleHead.IsValid(), 'takeover completes past restorePins and removes old host chrome');
+	assert(lifts[0] === '', 'restorePins clears lift attribute without throwing on alias: ' + JSON.stringify(lifts));
+	assert(legacyValues.includes('"on":true'), 'legacy <=1.2.4 client receives pushed values via ring(p)');
+	assert(old125SubValues.includes('"on":true'), '1.2.5-shaped client receives pushed values on Sub without scan recursion');
+	const ringsBefore = old125SubRings;
+	const deadSub = mk('Panel', old125, '', 'AddonSettingsSub');
+	deadSub.SetAttributeString('dead', '1');
+	deadSub.SetAttributeString('values', '');
+	$.DispatchEvent('Activated', old125);
+	assert(old125SubRings === ringsBefore, 'dead empty Sub child does not trigger re-push on scan');
+	old125.SetAttributeString('set', JSON.stringify({ on: false }));
+	$.DispatchEvent('Activated', old125);
+	assert(!deadSub.IsValid() && old125SubValues.includes('"on":false'), 'push prunes dead Sub child and updates live Sub without scan recursion');
+	const ownClient = esc.FindChildTraverse('AddonSettingsClient_deadlock_profile_links');
+	assert(!!(ownClient && ownClient.events && typeof ownClient.events.onactivate === 'function'), 'newly planted client panel sets onactivate to absorb bubbling');
+	assert(S.errors().length === 0, 'takeover + bubbling regression produces zero script errors');
+	assert(!S.info().some(m => /^Addon Settings: (?:take over|scan):/.test(m)), 'no take over or scan error logs: ' + S.info().filter(m => /take over|scan/.test(m)).join(' | '));
 }
 
 console.log(passes + ' passed, ' + fails + ' failed');

@@ -14,7 +14,7 @@ VER=$(sed -n "s/^const VERSION = '\\([^']*\\)';/\\1/p" src/main.js | head -n 1)
 	echo "// Deadlock Lobby Ranks $VER - built from src/ by tools/build.sh. Written from scratch."
 	echo '(() => {'
 	echo "'use strict';"
-	sh ../../lib/addon-settings/vendor.sh print 1.2.5
+	sh ../../lib/addon-settings/vendor.sh print 1.2.6
 	cat ../../lib/steam-id.js src/strings.js src/main.js
 	echo '})();'
 } > build/pak/panorama/scripts/lobby_ranks.js

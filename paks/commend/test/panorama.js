@@ -48,8 +48,11 @@ global.$ = {
 	CancelScheduled: id => { jobs = jobs.filter(j => j.id !== id); },
 	DispatchEvent(ev, p) {
 		H.clicks.push({ ev: ev, id: p && p.id });
-		if (ev === 'Activated' && p && p.valid && p.events && p.events.onactivate) p.events.onactivate();
-		else if (p && p.events && p.events[ev]) p.events[ev]();
+		if (ev === 'Activated') {
+			for (let cur = p; cur && cur.valid; cur = cur.parent) {
+				if (cur.events && cur.events.onactivate) { cur.events.onactivate(); break; }
+			}
+		} else if (p && p.events && p.events[ev]) p.events[ev]();
 	},
 	Msg: m => { (/^Deadlock Commend: \d|^DC-diag |^Addon Settings:/.test(m) ? info : errors).push(m); },
 	Language: () => 'english',

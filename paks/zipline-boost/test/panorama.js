@@ -88,7 +88,11 @@ global.$ = {
 	DispatchEvent(ev, p, extra) {
 		C.dispatches++;
 		H.clicks.push({ ev: ev, id: p && p.id, p: p, extra: extra });
-		if (ev === 'Activated' && p && p.valid && p.events.onactivate) p.events.onactivate();
+		if (ev === 'Activated') {
+			for (let cur = p; cur && cur.valid; cur = cur.parent) {
+				if (cur.events && cur.events.onactivate) { cur.events.onactivate(); break; }
+			}
+		}
 		if (ev === 'ExternalBrowserGoToURL') overlay.urls.push(p);
 	},
 	Localize: (s, panel) => {

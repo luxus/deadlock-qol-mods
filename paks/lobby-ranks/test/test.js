@@ -133,7 +133,7 @@ start({ store: { on: false }, wait: 0.2 });
 assert(H.entries.every(r => !badge(r) || !shown(badge(r))), 'stored off: no badges');
 
 assert((SRC.match(/AddonSettings\.pulse\(\);/g) || []).length >= 2, 'both tick paths pulse');
-assert(/const BUILD = 12;/.test(SRC), 'vendored lib');
+assert(/const BUILD = 13;/.test(SRC), 'vendored lib');
 assert(!/hud_escape_menu/.test(fs.readFileSync(__dirname + '/../src/main.js', 'utf8')) && !fs.existsSync(__dirname + '/../build/pak/panorama/layout/hud_escape_menu.xml'), 'never touches hud_escape_menu');
 
 // ---- crash regression (lea console 22.11. 09:40:10: FATAL "Unable to find child 'TeamControls'

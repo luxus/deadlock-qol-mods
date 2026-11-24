@@ -49,7 +49,11 @@ global.$ = {
 	CancelScheduled: id => { jobs = jobs.filter(j => j.id !== id); },
 	DispatchEvent(ev, p) {
 		H.clicks.push({ ev: ev, id: typeof p === 'string' ? p : p && p.id });
-		if (ev === 'Activated' && p && p.valid && p.events && p.events.onactivate) p.events.onactivate();
+		if (ev === 'Activated') {
+			for (let cur = p; cur && cur.valid; cur = cur.parent) {
+				if (cur.events && cur.events.onactivate) { cur.events.onactivate(); break; }
+			}
+		}
 	},
 	Msg: m => { (/^Deadlock Profile Links:|^Addon Settings:/.test(m) ? info : errors).push(m); },
 	Language: () => 'english',

@@ -18,7 +18,7 @@ assert(!js.includes('ClientUI_FireOutput'), 'no mute-list poll');
 const settings = read('panorama/scripts/deadlock_commend_settings.js');
 assert(settings.includes("id: 'deadlock_commend'"), 'addon id deadlock_commend');
 assert(settings.includes("const VERSION = '2.0.0';") && settings.includes("'Deadlock Commend: ' + VERSION + ' loaded"), 'loaded log line');
-assert(settings.includes('const BUILD = 12;'), 'addon settings 1.2.5 build 12');
+assert(settings.includes('const BUILD = 13;'), 'addon settings 1.2.6 build 13');
 const reg = read('panorama/scripts/deadlock_commend_register.js');
 assert(reg.includes('DC-diag register hud'), 'hud registrar log');
 

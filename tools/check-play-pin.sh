@@ -24,6 +24,6 @@ if [ "$kind" = "LIFTS" ]; then
 	exit 0
 fi
 echo "step() no longer calls syncPlay(). CanChangeHero during the menu look leaves PLAY at 312." >&2
-echo "Restore syncPlay() in lib/addon-settings/1.2.5/addon_settings.js (improved-quickbuy e17b680)." >&2
+echo "Restore syncPlay() in lib/addon-settings/1.2.6/addon_settings.js (improved-quickbuy e17b680)." >&2
 rm -f "$out"
 exit 1

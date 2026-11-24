@@ -1,5 +1,5 @@
 ---- MODULE HudppTab ----
-\* hookHudppTabs in lib/addon-settings/1.2.5 (addon_settings.js).
+\* hookHudppTabs in lib/addon-settings/1.2.6 (addon_settings.js).
 \* HUD++ showTab returns when the requested tab is already its closed-over tab
 \* (improved-quickbuy 0e8c7ed). We never write HudppTab_*.
 

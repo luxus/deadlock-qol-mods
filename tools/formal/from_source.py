@@ -4,7 +4,7 @@ import os, sys
 
 ROOT = os.path.dirname(os.path.dirname(os.path.dirname(os.path.abspath(__file__))))
 LIBS = [
-    "lib/addon-settings/1.2.5/addon_settings.js",
+    "lib/addon-settings/1.2.6/addon_settings.js",
 ]
 
 def body(src, name):

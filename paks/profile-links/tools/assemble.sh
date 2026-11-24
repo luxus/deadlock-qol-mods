@@ -30,7 +30,7 @@ bundle build/pak/panorama/scripts/profile_links_scoreboard.js 1 ../../lib/steam-
 	echo '(() => {'
 	echo "'use strict';"
 	echo "const VERSION = '$VER';"
-	sh ../../lib/addon-settings/vendor.sh print 1.2.5
+	sh ../../lib/addon-settings/vendor.sh print 1.2.6
 	cat src/strings.js src/schema.js src/apply.js src/settings.js
 	echo '})();'
 } > build/pak/panorama/scripts/profile_links_settings.js
@@ -40,7 +40,7 @@ node --check build/pak/panorama/scripts/profile_links_settings.js
 	echo '(() => {'
 	echo "'use strict';"
 	echo "const VERSION = '$VER';"
-	sh ../../lib/addon-settings/vendor.sh print 1.2.5
+	sh ../../lib/addon-settings/vendor.sh print 1.2.6
 	cat src/strings.js src/schema.js src/register.js
 	echo '})();'
 } > build/pak/panorama/scripts/profile_links_register.js

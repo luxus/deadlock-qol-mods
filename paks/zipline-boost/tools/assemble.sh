@@ -15,7 +15,7 @@ VER=$(sed -n "s/^const VERSION = '\\([^']*\\)';/\\1/p" src/main.js | head -n 1)
 	echo "try { \$.Msg('ZB-diag script-entry'); } catch (e) {}"
 	echo "if (\$.ZbLoaded) { try { \$.Msg('ZB-diag script-entry already-loaded'); } catch (e) {} return; }"
 	echo "\$.ZbLoaded = true;"
-	sh ../../lib/addon-settings/vendor.sh print 1.2.5
+	sh ../../lib/addon-settings/vendor.sh print 1.2.6
 	cat src/strings.js src/main.js
 	echo '})();'
 } > build/pak/panorama/scripts/zipline_boost.js

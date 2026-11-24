@@ -161,7 +161,7 @@ assert(T().parseSeconds('Press 4') === -1 && T().parseSeconds('[1]') === -1 && T
 	advance(1);
 	assert(shownOv() && state() === 'Ready', 'new match after gameplay_hud teardown starts Ready, not stale cooldown: ' + state());
 }
-assert(/const BUILD = 12;/.test(SRC), 'vendored addon-settings build 12');
+assert(/const BUILD = 13;/.test(SRC), 'vendored addon-settings build 13');
 
 console.log(passes + ' passed, ' + fails + ' failed');
 process.exit(fails ? 1 : 0);
